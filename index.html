@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Monitoring & Kendali Sirkulasi Ruang Server — Capstone C1</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    @keyframes spin-fan {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .fan-spinning {
+      animation: spin-fan 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .card-elevated {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-elevated:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50/70 selection:bg-sky-500 selection:text-white flex flex-col justify-between">
+
+  <!-- =========================================================================
+       TOP GLOBAL NAVIGATION HEADER
+  ========================================================================= -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      
+      <!-- Brand & Project Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-sm shadow-sm ring-1 ring-slate-800 shrink-0">
+          C1
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 whitespace-nowrap">
+              SISTEM KENDALI TERMAL RUANG SERVER
+            </h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 font-mono whitespace-nowrap">
+              SCADA IoT
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-medium truncate">
+            Departemen Teknik Elektro FTEIC &bull; Institut Teknologi Sepuluh Nopember
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Toolbar & Heartbeat -->
+      <div class="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 shrink-0">
+        
+        <!-- Hardware Meta Pill -->
+        <div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100/80 border border-slate-200/80 text-xs text-slate-600 font-mono">
+          <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+          <span>ESP32 &bull; Baterai 3S (12V)</span>
+        </div>
+
+        <!-- Heartbeat Indicator -->
+        <div id="heartbeatPill" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600 transition-all">
+          <span id="heartbeatDot" class="relative flex h-2 w-2">
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
+          </span>
+          <span id="heartbeatText" class="font-mono text-[11px] font-semibold whitespace-nowrap">MEMERIKSA KONEKSI...</span>
+        </div>
+
+        <!-- Audio Alert Toggle Button -->
+        <button id="btnSound" onclick="toggleAudioAlert()" title="Bunyikan Alarm Web saat Suhu Kritis" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-95 transition-all">
+          <svg id="iconSoundMuted" class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+          <svg id="iconSoundActive" class="w-3.5 h-3.5 text-rose-600 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <span id="textSound" class="hidden sm:inline font-mono text-[11px]">Alarm: Off</span>
+        </button>
+
+        <!-- Manual Refresh Button -->
+        <button id="btnRefresh" onclick="manualRefresh()" title="Sinkronisasi Ulang Data" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-95 transition-all">
+          <svg id="iconRefresh" class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          <span class="hidden sm:inline">Refresh</span>
+        </button>
+
+        <!-- CSV Export Button -->
+        <button onclick="exportToCSV()" title="Ekspor Data Telemetri ke CSV" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 shadow-2xs active:scale-95 transition-all">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          <span class="whitespace-nowrap">Unduh Log</span>
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN CONTENT CONTAINER
+  ========================================================================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 flex-1 w-full">
+
+    <!-- KPI Metric Cards (4 Columns) -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+
+      <!-- Card 1: Suhu Ruang -->
+      <div id="cardTemp" class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Suhu Ruang Uji</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/><path d="M12 2v2"/><path d="M12 9v4"/></svg>
+          </div>
+        </div>
+        <div class="flex items-baseline space-x-1 my-1">
+          <span id="valTemp" class="text-4xl font-extrabold font-mono tracking-tight text-slate-900">--.-</span>
+          <span class="text-lg font-semibold text-slate-400">°C</span>
+        </div>
+        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span id="badgeTemp" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+            Menunggu data...
+          </span>
+          <span class="text-[10px] text-slate-500 font-mono font-medium">Batas: 28.0°C</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Kelembapan Relatif -->
+      <div id="cardHum" class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Kelembapan Udara</span>
+          <div class="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>
+          </div>
+        </div>
+        <div class="flex items-baseline space-x-1 my-1">
+          <span id="valHum" class="text-4xl font-extrabold font-mono tracking-tight text-slate-900">--.-</span>
+          <span class="text-lg font-semibold text-slate-400">%RH</span>
+        </div>
+        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span id="badgeHum" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+            Standar ASHRAE TC 9.9
+          </span>
+          <span class="text-[10px] text-slate-500 font-mono font-medium">Ideal: 40–60%</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Sirkulasi Kipas Push-Pull -->
+      <div id="cardFan" class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Sirkulasi Kipas</span>
+          <div id="fanIconWrapper" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
+            <svg id="fanIconSvg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
+        </div>
+        <div class="my-1">
+          <span id="valFan" class="text-2xl font-bold font-mono tracking-tight text-slate-600">STANDBY</span>
+        </div>
+        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span id="subFan" class="text-[11px] text-slate-500 font-medium">
+            Ventilasi Pasif (Kipas Off)
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 4: Waktu Sinkronisasi & Telemetri -->
+      <div class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Interval Siklus</span>
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+        </div>
+        <div class="flex items-baseline space-x-1 my-1">
+          <span class="text-4xl font-extrabold font-mono tracking-tight text-slate-900">5.0</span>
+          <span class="text-lg font-semibold text-slate-400">Detik</span>
+        </div>
+        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span id="valLastSync" class="text-[11px] text-slate-500 font-mono font-medium">Pembaruan: Menunggu...</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Quick Stats Bar (Min / Max / Avg Statistical Analytics) -->
+    <section class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+        
+        <div class="pt-2 md:pt-0 md:px-3">
+          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Suhu Rata-rata</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="statAvgTemp" class="text-xl font-bold font-mono text-slate-800">--.-</span>
+            <span class="text-xs text-slate-500">°C</span>
+          </div>
+        </div>
+
+        <div class="pt-2 md:pt-0 md:px-3">
+          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Suhu Puncak (Maks)</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="statMaxTemp" class="text-xl font-bold font-mono text-amber-600">--.-</span>
+            <span class="text-xs text-slate-500">°C</span>
+          </div>
+        </div>
+
+        <div class="pt-2 md:pt-0 md:px-3">
+          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Kelembapan Rata-rata</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="statAvgHum" class="text-xl font-bold font-mono text-slate-800">--.-</span>
+            <span class="text-xs text-slate-500">%</span>
+          </div>
+        </div>
+
+        <div class="pt-2 md:pt-0 md:px-3">
+          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Total Data Terbaca</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="statTotalRows" class="text-xl font-bold font-mono text-slate-800">0</span>
+            <span class="text-xs text-slate-500">siklus</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Chart Panel: Interactive Historical Curves -->
+    <section class="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+            <svg class="w-4 h-4 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            Grafik Telemetri Suhu & Kelembapan Real-Time
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Tren fluktuasi termal termonitor langsung dari miniatur ruang server
+          </p>
+        </div>
+
+        <!-- Interactive Filter Controls -->
+        <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+          
+          <!-- Dataset toggles -->
+          <button id="toggleTemp" onclick="toggleDataset(0)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 font-semibold shadow-2xs hover:bg-amber-100/70 transition-all">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span>Suhu Ruang</span>
+          </button>
+
+          <button id="toggleHum" onclick="toggleDataset(1)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-800 font-semibold shadow-2xs hover:bg-sky-100/70 transition-all">
+            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+            <span>Kelembapan</span>
+          </button>
+
+          <!-- Range limit selector -->
+          <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 text-slate-600">
+            <button onclick="changeLimit(15)" id="btnLimit15" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-slate-900 shadow-2xs transition-all">15 Pts</button>
+            <button onclick="changeLimit(30)" id="btnLimit30" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all">30 Pts</button>
+            <button onclick="changeLimit(50)" id="btnLimit50" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all">50 Pts</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Canvas Chart Container -->
+      <div class="h-64 sm:h-80 w-full pt-2">
+        <canvas id="telemetryChart"></canvas>
+      </div>
+
+      <!-- Threshold indicators legend -->
+      <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-500 font-mono gap-2">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-0.5 border-b-2 border-dashed border-amber-500 inline-block"></span>
+            <span>Batas Kipas ON (28.0°C)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-0.5 border-b-2 border-dashed border-rose-500 inline-block"></span>
+            <span>Batas Bahaya (30.0°C)</span>
+          </div>
+        </div>
+        <div class="text-[11px] text-slate-500">
+          *Notifikasi darurat Telegram otomatis terkirim jika Suhu &ge; 30.0°C
+        </div>
+      </div>
+    </section>
+
+    <!-- Historical Data Log Table -->
+    <section class="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
+      
+      <!-- Table Header & Filter Bar -->
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+          <h3 class="text-sm font-bold text-slate-900">Log Rekaman Telemetri Real-Time</h3>
+          <span id="badgeLogCount" class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 font-medium">
+            0 Baris
+          </span>
+        </div>
+
+        <!-- Filter Search Box -->
+        <div class="flex items-center gap-2">
+          <div class="relative w-full sm:w-64">
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" oninput="filterTable()" placeholder="Cari status / suhu..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-hidden focus:ring-1 focus:ring-sky-500 font-mono">
+          </div>
+        </div>
+      </div>
+
+      <!-- Responsive Table -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 font-mono font-semibold uppercase tracking-wider border-b border-slate-200 text-[11px]">
+              <th class="py-3 px-4">Indeks ID</th>
+              <th class="py-3 px-4">Waktu Perekaman</th>
+              <th class="py-3 px-4">Suhu (°C)</th>
+              <th class="py-3 px-4">Kelembapan (%RH)</th>
+              <th class="py-3 px-4">Status Relay</th>
+              <th class="py-3 px-4">Kondisi Operasional Termal</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-100 font-mono text-slate-700">
+            <tr>
+              <td colspan="6" class="py-12 text-center text-slate-400">
+                <div class="flex items-center justify-center space-x-2">
+                  <span class="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></span>
+                  <span class="text-xs font-sans">Menghubungkan ke basis data telemetri...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Footer Status -->
+      <div class="p-3 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between font-mono">
+        <span id="tablePageInfo">Menampilkan data telemetri terverifikasi</span>
+        <span class="text-[11px] text-slate-400">Auto-update setiap 4 detik</span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       GLOBAL FOOTER
+  ========================================================================= -->
+  <footer class="mt-8 border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500 font-mono">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>
+        Capstone Design Kelompok C1 &copy; 2026 &bull; Departemen Teknik Elektro FTEIC ITS
+      </div>
+      <div class="text-slate-400">
+        Push-Pull Thermal Management &bull; Standar ASHRAE TC 9.9
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       LOGIC CONTROLLERS & REALTIME STACK (ROBUST REST & WEBSOCKET)
+  ========================================================================= -->
+  <script>
+    // =========================================================================
+    // 1. SUPABASE CREDENTIALS & INITIALIZATION
+    // =========================================================================
+    const SUPABASE_URL = "https://wpcfddrvzlhpmqjfiydp.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwY2ZkZHJ2emxocG1xamZpeWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDk5NDEsImV4cCI6MjEwOTA4NTk0MX0.IesYOLYRz-jqgorDpcYLHAXX4iwwwUkgu7asvWFzSnM";
+
+    // Supabase client instance (menggunakan nama variabel client agar tidak konflik dengan global namespace)
+    let supabaseClient = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (err) {
+      console.warn("Supabase JS SDK init:", err);
+    }
+
+    let displayLimit = 15;
+    let allLogs = [];
+    let latestRecordDate = null;
+    let isAudioAlertEnabled = false;
+    let lastAudioBeepTime = 0;
+
+    // Web Audio API Synthesizer (Buzzer Beep simulator)
+    function playAlertBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880 Hz note A5
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {
+        console.warn("AudioContext notice:", e);
+      }
+    }
+
+    function toggleAudioAlert() {
+      isAudioAlertEnabled = !isAudioAlertEnabled;
+      const mutedIcon = document.getElementById('iconSoundMuted');
+      const activeIcon = document.getElementById('iconSoundActive');
+      const textSound = document.getElementById('textSound');
+
+      if (isAudioAlertEnabled) {
+        mutedIcon.classList.add('hidden');
+        activeIcon.classList.remove('hidden');
+        textSound.innerText = "Alarm: On";
+        textSound.className = "hidden sm:inline font-mono text-[11px] text-rose-600 font-bold";
+        playAlertBeep();
+      } else {
+        mutedIcon.classList.remove('hidden');
+        activeIcon.classList.add('hidden');
+        textSound.innerText = "Alarm: Off";
+        textSound.className = "hidden sm:inline font-mono text-[11px] text-slate-500";
+      }
+    }
+
+    // =========================================================================
+    // 2. TIMEZONE PARSER (WIB NORMALIZER)
+    // =========================================================================
+    function parseDateToWIB(dateStr) {
+      if (!dateStr) return new Date();
+      if (dateStr.endsWith('+00:00')) {
+        return new Date(dateStr.replace('+00:00', '+07:00'));
+      }
+      return new Date(dateStr);
+    }
+
+    function formatTimeWIB(dateObj) {
+      return dateObj.toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+    }
+
+    // =========================================================================
+    // 3. CHART.JS CONFIGURATION (PREMIUM LIGHT THEME)
+    // =========================================================================
+    const ctx = document.getElementById('telemetryChart').getContext('2d');
+    
+    // Elegant soft gradients
+    const tempGradient = ctx.createLinearGradient(0, 0, 0, 320);
+    tempGradient.addColorStop(0, 'rgba(245, 158, 11, 0.22)');
+    tempGradient.addColorStop(1, 'rgba(245, 158, 11, 0.00)');
+
+    const humGradient = ctx.createLinearGradient(0, 0, 0, 320);
+    humGradient.addColorStop(0, 'rgba(2, 132, 199, 0.18)');
+    humGradient.addColorStop(1, 'rgba(2, 132, 199, 0.00)');
+
+    const chartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Suhu Ruang (°C)',
+          data: [],
+          borderColor: '#f59e0b',
+          backgroundColor: tempGradient,
+          borderWidth: 2.5,
+          tension: 0.35,
+          fill: true,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#f59e0b',
+          pointBorderWidth: 2,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Kelembapan (%RH)',
+          data: [],
+          borderColor: '#0284c7',
+          backgroundColor: humGradient,
+          borderWidth: 2,
+          tension: 0.35,
+          fill: true,
+          pointRadius: 2.5,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#0284c7',
+          pointBorderWidth: 2,
+          yAxisID: 'y1'
+        }
+      ]
+    };
+
+    const telemetryChart = new Chart(ctx, {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 350 },
+        layout: {
+          padding: { left: 14, right: 10 }
+        },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#ffffff',
+            titleColor: '#0f172a',
+            bodyColor: '#334155',
+            borderColor: '#e2e8f0',
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 4,
+            usePointStyle: true,
+            cornerRadius: 10,
+            shadowOffsetX: 0,
+            shadowOffsetY: 4,
+            shadowBlur: 10,
+            shadowColor: 'rgba(0,0,0,0.05)',
+            titleFont: { size: 12, family: 'JetBrains Mono', weight: 'bold' },
+            bodyFont: { size: 12, family: 'JetBrains Mono' }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(241, 245, 249, 1)', lineWidth: 1 },
+            ticks: { font: { size: 10, family: 'JetBrains Mono' }, color: '#64748b' }
+          },
+          y: {
+            type: 'linear',
+            position: 'left',
+            min: 20,
+            max: 42,
+            afterFit: (axis) => { axis.width = 65; },
+            grid: { color: 'rgba(241, 245, 249, 1)' },
+            ticks: {
+              stepSize: 4,
+              padding: 6,
+              font: { size: 11, family: 'JetBrains Mono' },
+              color: '#d97706',
+              callback: val => val + ' °C'
+            }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            min: 20,
+            max: 100,
+            afterFit: (axis) => { axis.width = 55; },
+            grid: { drawOnChartArea: false },
+            ticks: {
+              stepSize: 20,
+              padding: 6,
+              font: { size: 11, family: 'JetBrains Mono' },
+              color: '#0284c7',
+              callback: val => val + ' %'
+            }
+          }
+        }
+      }
+    });
+
+    function toggleDataset(index) {
+      const isVisible = telemetryChart.isDatasetVisible(index);
+      telemetryChart.setDatasetVisibility(index, !isVisible);
+      telemetryChart.update();
+
+      const btn = index === 0 ? document.getElementById('toggleTemp') : document.getElementById('toggleHum');
+      if (isVisible) {
+        btn.classList.add('opacity-40', 'line-through');
+      } else {
+        btn.classList.remove('opacity-40', 'line-through');
+      }
+    }
+
+    function changeLimit(limit) {
+      displayLimit = limit;
+      ['15', '30', '50'].forEach(l => {
+        const btn = document.getElementById(`btnLimit${l}`);
+        if (l == limit) {
+          btn.className = "px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-slate-900 shadow-2xs transition-all";
+        } else {
+          btn.className = "px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all";
+        }
+      });
+      loadData();
+    }
+
+    // =========================================================================
+    // 4. UI METRIC & INSIGHT CONTROLLER
+    // =========================================================================
+    function updateMetricsUI(record) {
+      if (!record) return;
+      latestRecordDate = parseDateToWIB(record.created_at);
+
+      const temp = parseFloat(record.temperature);
+      const hum = parseFloat(record.humidity);
+      const fan = record.fan_status;
+
+      // Suhu UI
+      const valTemp = document.getElementById('valTemp');
+      const badgeTemp = document.getElementById('badgeTemp');
+      const cardTemp = document.getElementById('cardTemp');
+      valTemp.innerText = temp.toFixed(1);
+
+      if (temp >= 30.0) {
+        cardTemp.className = "card-elevated bg-rose-50/40 border border-rose-300 rounded-2xl p-5 shadow-xs relative overflow-hidden ring-1 ring-rose-200";
+        valTemp.className = "text-4xl font-extrabold font-mono tracking-tight text-rose-600";
+        badgeTemp.className = "inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 border border-rose-200";
+        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> Bahaya Kritis (&ge; 30.0°C)`;
+
+        // Sound notification trigger
+        if (isAudioAlertEnabled && (Date.now() - lastAudioBeepTime > 4000)) {
+          playAlertBeep();
+          lastAudioBeepTime = Date.now();
+        }
+      } else if (temp >= 28.0) {
+        cardTemp.className = "card-elevated bg-amber-50/30 border border-amber-300 rounded-2xl p-5 shadow-xs relative overflow-hidden ring-1 ring-amber-200";
+        valTemp.className = "text-4xl font-extrabold font-mono tracking-tight text-amber-600";
+        badgeTemp.className = "inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200";
+        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Kipas Aktif (&ge; 28.0°C)`;
+      } else {
+        cardTemp.className = "card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden";
+        valTemp.className = "text-4xl font-extrabold font-mono tracking-tight text-emerald-600";
+        badgeTemp.className = "inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200";
+        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Suhu Normal (&lt; 28.0°C)`;
+      }
+
+      // Kelembapan UI
+      const valHum = document.getElementById('valHum');
+      const badgeHum = document.getElementById('badgeHum');
+      valHum.innerText = hum.toFixed(1);
+
+      if (hum >= 40.0 && hum <= 60.0) {
+        badgeHum.className = "inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200";
+        badgeHum.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Optimal ASHRAE (40–60%)`;
+      } else {
+        badgeHum.className = "inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200";
+        badgeHum.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Termonitor Baik`;
+      }
+
+      // Status Kipas Push-Pull
+      const cardFan = document.getElementById('cardFan');
+      const fanIconWrapper = document.getElementById('fanIconWrapper');
+      const fanIconSvg = document.getElementById('fanIconSvg');
+      const valFan = document.getElementById('valFan');
+      const subFan = document.getElementById('subFan');
+
+      if (fan) {
+        cardFan.className = "card-elevated bg-sky-50/40 border border-sky-300 rounded-2xl p-5 shadow-xs relative overflow-hidden ring-1 ring-sky-200";
+        fanIconWrapper.className = "w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center shadow-2xs";
+        fanIconSvg.classList.add('fan-spinning');
+        valFan.className = "text-2xl font-bold font-mono tracking-tight text-sky-700";
+        valFan.innerText = "AKTIF (100% RPM)";
+        subFan.className = "text-[11px] text-sky-700 font-semibold flex items-center gap-1";
+        subFan.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span> Sirkulasi Push-Pull Menyala Penuh`;
+      } else {
+        cardFan.className = "card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden";
+        fanIconWrapper.className = "w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400";
+        fanIconSvg.classList.remove('fan-spinning');
+        valFan.className = "text-2xl font-bold font-mono tracking-tight text-slate-500";
+        valFan.innerText = "STANDBY";
+        subFan.className = "text-[11px] text-slate-500 font-medium flex items-center gap-1";
+        subFan.innerHTML = `Ventilasi Pasif (Suhu Ruang Aman)`;
+      }
+
+      // Waktu Pembaruan
+      document.getElementById('valLastSync').innerText = "Log Terakhir: " + formatTimeWIB(latestRecordDate);
+    }
+
+    function updateStatsSummary(logs) {
+      if (!logs || logs.length === 0) return;
+      
+      const temps = logs.map(r => parseFloat(r.temperature)).filter(v => !isNaN(v));
+      const hums = logs.map(r => parseFloat(r.humidity)).filter(v => !isNaN(v));
+
+      const avgTemp = (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1);
+      const maxTemp = Math.max(...temps).toFixed(1);
+      const avgHum = (hums.reduce((a, b) => a + b, 0) / hums.length).toFixed(1);
+
+      document.getElementById('statAvgTemp').innerText = avgTemp;
+      document.getElementById('statMaxTemp').innerText = maxTemp;
+      document.getElementById('statAvgHum').innerText = avgHum;
+      document.getElementById('statTotalRows').innerText = logs.length;
+      document.getElementById('badgeLogCount').innerText = `${logs.length} Baris`;
+    }
+
+    function renderTable(logs) {
+      const tbody = document.getElementById('tableBody');
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400 font-mono">Belum ada data telemetri yang tersedia.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(row => {
+        const temp = parseFloat(row.temperature);
+        const fan = row.fan_status;
+        const d = parseDateToWIB(row.created_at);
+        const timeStr = formatTimeWIB(d);
+
+        let tempBadge = `<span class="text-slate-700 font-semibold">${temp.toFixed(1)} °C</span>`;
+        let statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-sans bg-slate-100 text-slate-600">Suhu Normal ASHRAE</span>`;
+        
+        if (temp >= 30.0) {
+          tempBadge = `<span class="text-rose-600 font-bold">${temp.toFixed(1)} °C</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-sans bg-rose-50 text-rose-700 border border-rose-200 font-semibold">⚠️ Peringatan Kritis (Telegram Alert)</span>`;
+        } else if (temp >= 28.0) {
+          tempBadge = `<span class="text-amber-600 font-bold">${temp.toFixed(1)} °C</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-sans bg-amber-50 text-amber-800 border border-amber-200">Kipas Aktif (Push-Pull Sirkulasi)</span>`;
+        }
+
+        const relayPill = fan 
+          ? `<span class="px-2 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200 font-bold text-[10px]">RELAY ON</span>`
+          : `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px]">RELAY OFF</span>`;
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-4 text-slate-400 font-mono text-[11px]">#${row.id}</td>
+            <td class="py-3 px-4 text-slate-600 font-mono">${timeStr}</td>
+            <td class="py-3 px-4">${tempBadge}</td>
+            <td class="py-3 px-4 text-sky-700 font-mono font-medium">${parseFloat(row.humidity).toFixed(1)} %</td>
+            <td class="py-3 px-4">${relayPill}</td>
+            <td class="py-3 px-4">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterTable() {
+      const term = document.getElementById('searchInput').value.toLowerCase();
+      if (!term) {
+        renderTable(allLogs);
+        return;
+      }
+      const filtered = allLogs.filter(r => {
+        return (
+          r.id.toString().includes(term) ||
+          r.temperature.toString().includes(term) ||
+          r.humidity.toString().includes(term) ||
+          (r.fan_status ? "on aktif sirkulasi" : "off standby").includes(term)
+        );
+      });
+      renderTable(filtered);
+    }
+
+    function updateChart(logs) {
+      const sorted = [...logs].reverse();
+      chartData.labels = sorted.map(r => {
+        const d = parseDateToWIB(r.created_at);
+        return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      });
+      chartData.datasets[0].data = sorted.map(r => parseFloat(r.temperature));
+      chartData.datasets[1].data = sorted.map(r => parseFloat(r.humidity));
+      telemetryChart.update();
+    }
+
+    // =========================================================================
+    // 5. HEARTBEAT ENGINE (PRESISI STATUS ESP32 LIVE / STANDBY)
+    // =========================================================================
+    function checkHeartbeat() {
+      const pill = document.getElementById('heartbeatPill');
+      const dot = document.getElementById('heartbeatDot');
+      const text = document.getElementById('heartbeatText');
+
+      if (!latestRecordDate) {
+        pill.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-medium text-slate-500";
+        dot.innerHTML = `<span class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>`;
+        text.innerText = "MENUNGGU BASIS DATA...";
+        return;
+      }
+
+      // Detik selisih real dari waktu lokal Jakarta
+      const diffSec = Math.max(0, Math.floor((Date.now() - latestRecordDate.getTime()) / 1000));
+
+      if (diffSec <= 15) {
+        // SISTEM LIVE AKTIF (ESP32 MENYALA & STREAMING)
+        pill.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 shadow-2xs";
+        dot.innerHTML = `
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        `;
+        text.innerHTML = `SISTEM AKTIF (ONLINE &bull; ${diffSec}s LALU)`;
+      } else {
+        // PERANGKAT STANDBY / MATI (OFFLINE)
+        let timeAgo = "";
+        if (diffSec < 60) {
+          timeAgo = `${diffSec} detik lalu`;
+        } else if (diffSec < 3600) {
+          timeAgo = `${Math.floor(diffSec / 60)} menit lalu`;
+        } else {
+          timeAgo = `${Math.floor(diffSec / 3600)} jam lalu`;
+        }
+        pill.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-xs font-semibold text-slate-700";
+        dot.innerHTML = `<span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>`;
+        text.innerHTML = `STANDBY (OFFLINE &bull; ${timeAgo})`;
+      }
+    }
+
+    setInterval(checkHeartbeat, 1000);
+
+    // =========================================================================
+    // 6. INTERACTIVE FEATURES: REFRESH & CSV EXPORT
+    // =========================================================================
+    async function manualRefresh() {
+      const icon = document.getElementById('iconRefresh');
+      icon.classList.add('animate-spin');
+      await loadData();
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+      }, 500);
+    }
+
+    function exportToCSV() {
+      if (!allLogs || allLogs.length === 0) {
+        alert("Belum ada data telemetri untuk diekspor.");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "ID,Waktu_WIB,Suhu_C,Kelembapan_RH,Relay_Kipas\r\n";
+
+      allLogs.forEach(row => {
+        const d = parseDateToWIB(row.created_at);
+        const timeStr = d.toISOString();
+        const fanStr = row.fan_status ? "ON" : "OFF";
+        csvContent += `${row.id},${timeStr},${row.temperature},${row.humidity},${fanStr}\r\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `telemetri_ruang_server_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // =========================================================================
+    // 7. ROBUST DATA FETCHING (DIRECT REST API + LOCAL CACHE FALLBACK)
+    // =========================================================================
+    async function loadData() {
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/sensor_logs?select=*&order=id.desc&limit=${displayLimit}`;
+        const resp = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
+          }
+        });
+
+        if (!resp.ok) {
+          throw new Error(`REST API HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+
+        if (data && data.length > 0) {
+          allLogs = data;
+          // Simpan ke local cache agar saat refresh atau offline data tidak hilang
+          try {
+            localStorage.setItem('capstone_sensor_logs_cache', JSON.stringify(data));
+          } catch(e) {}
+
+          updateMetricsUI(allLogs[0]);
+          updateStatsSummary(allLogs);
+          renderTable(allLogs);
+          updateChart(allLogs);
+          checkHeartbeat();
+        } else {
+          renderTable([]);
+        }
+      } catch (e) {
+        console.error("Gagal sinkronisasi data via REST API:", e);
+        // Fallback ke cache jika ada
+        try {
+          const cached = localStorage.getItem('capstone_sensor_logs_cache');
+          if (cached) {
+            allLogs = JSON.parse(cached);
+            if (allLogs.length > 0) {
+              updateMetricsUI(allLogs[0]);
+              updateStatsSummary(allLogs);
+              renderTable(allLogs);
+              updateChart(allLogs);
+              checkHeartbeat();
+            }
+          }
+        } catch(err) {}
+      }
+    }
+
+    // Realtime WebSocket Subscription
+    function subscribeRealtime() {
+      if (!supabaseClient) return;
+      try {
+        supabaseClient
+          .channel('channel_sensor_telemetry_clean')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sensor_logs' }, payload => {
+            allLogs.unshift(payload.new);
+            if (allLogs.length > displayLimit) allLogs.pop();
+            try {
+              localStorage.setItem('capstone_sensor_logs_cache', JSON.stringify(allLogs));
+            } catch(e) {}
+            updateMetricsUI(payload.new);
+            updateStatsSummary(allLogs);
+            renderTable(allLogs);
+            updateChart(allLogs);
+            checkHeartbeat();
+          })
+          .subscribe();
+      } catch (err) {
+        console.warn("Realtime WebSocket subscription error:", err);
+      }
+    }
+
+    // Coba load dari cache lokal saat pertama kali render (instan tanpa delay)
+    try {
+      const cached = localStorage.getItem('capstone_sensor_logs_cache');
+      if (cached) {
+        allLogs = JSON.parse(cached);
+        if (allLogs.length > 0) {
+          updateMetricsUI(allLogs[0]);
+          updateStatsSummary(allLogs);
+          renderTable(allLogs);
+          updateChart(allLogs);
+          checkHeartbeat();
+        }
+      }
+    } catch(e) {}
+
+    // Polling background setiap 4 detik untuk reliabilitas penuh
+    setInterval(loadData, 4000);
+
+    // Initial load dari Cloud Supabase REST API & start realtime
+    loadData();
+    subscribeRealtime();
+  </script>
+</body>
+</html>
