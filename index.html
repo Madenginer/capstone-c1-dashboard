@@ -34,25 +34,54 @@
       to { transform: rotate(360deg); }
     }
     .fan-spinning {
-      animation: spin-fan 0.9s linear infinite;
+      animation: spin-fan 0.85s linear infinite;
+      transform-origin: center;
     }
-    @keyframes flow-packet-x {
-      0% { transform: translateX(-100%); opacity: 0; }
-      20% { opacity: 1; }
-      80% { opacity: 1; }
-      100% { transform: translateX(220%); opacity: 0; }
+    @keyframes flow-dots-x {
+      0% { background-position: 0 0; }
+      100% { background-position: 28px 0; }
     }
-    .packet-flowing-x {
-      animation: flow-packet-x 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    @keyframes flow-dots-y {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 28px; }
     }
-    @keyframes flow-packet-y {
-      0% { transform: translateY(-100%); opacity: 0; }
-      20% { opacity: 1; }
-      80% { opacity: 1; }
-      100% { transform: translateY(220%); opacity: 0; }
+    .stream-line-x {
+      background-image: radial-gradient(circle, #0284c7 2.2px, transparent 2.5px);
+      background-size: 14px 6px;
+      animation: flow-dots-x 0.75s linear infinite;
     }
-    .packet-flowing-y {
-      animation: flow-packet-y 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    .stream-line-x-emerald {
+      background-image: radial-gradient(circle, #10b981 2.2px, transparent 2.5px);
+      background-size: 14px 6px;
+      animation: flow-dots-x 0.75s linear infinite;
+    }
+    .stream-line-x-idle {
+      background-image: radial-gradient(circle, #cbd5e1 2px, transparent 2.2px);
+      background-size: 14px 6px;
+    }
+    .stream-line-y {
+      background-image: radial-gradient(circle, #0284c7 2.2px, transparent 2.5px);
+      background-size: 6px 14px;
+      animation: flow-dots-y 0.75s linear infinite;
+    }
+    .stream-line-y-idle {
+      background-image: radial-gradient(circle, #cbd5e1 2px, transparent 2.2px);
+      background-size: 6px 14px;
+    }
+    @keyframes wind-blow {
+      0% { transform: translateX(-4px); opacity: 0.25; }
+      50% { opacity: 1; }
+      100% { transform: translateX(5px); opacity: 0.25; }
+    }
+    .wind-active {
+      animation: wind-blow 1.1s ease-in-out infinite;
+    }
+    @keyframes chip-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.22); }
+      50% { box-shadow: 0 0 0 8px rgba(14, 165, 233, 0); }
+    }
+    .icon-halo-active {
+      animation: chip-pulse 2.2s infinite;
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
@@ -111,6 +140,12 @@
           <span id="textSound" class="text-xs">Suara: Mati</span>
         </button>
 
+        <!-- Clean Setpoint Config Button -->
+        <button onclick="openConfigModal()" title="Atur batas suhu nyala kipas & mode kerja" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="14" y1="21" y2="21"/><line x1="4" x2="14" y1="3" y2="3"/><line x1="12" x2="20" y1="12" y2="12"/><line x1="4" x2="8" y1="12" y2="12"/><line x1="16" x2="20" y1="21" y2="21"/><line x1="16" x2="20" y1="3" y2="3"/><circle cx="14" cy="3" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="14" cy="21" r="2"/></svg>
+          <span>Atur Suhu</span>
+        </button>
+
         <!-- Manual Refresh -->
         <button id="btnRefresh" onclick="manualRefresh()" title="Segarkan data dari server" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all cursor-pointer">
           <svg id="iconRefresh" class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
@@ -163,8 +198,8 @@
           <span id="badgeTemp" class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
             Menunggu data...
           </span>
-          <!-- Hidden backdoor trigger: Triple-click to open Setpoint Config Modal -->
-          <span id="labelThresholdCard" onclick="handleSecretTrigger()" class="text-[11px] text-slate-400 font-mono-num select-none cursor-default">Batas: 28.0°C</span>
+          <!-- Direct click to open Setpoint Config Modal -->
+          <button type="button" id="labelThresholdCard" onclick="openConfigModal()" title="Klik untuk mengatur batas suhu" class="text-[11px] text-slate-500 hover:text-sky-700 font-mono-num px-1.5 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer">Batas: 28.0°C</button>
         </div>
       </div>
 
@@ -225,15 +260,15 @@
     </section>
 
     <!-- =======================================================================
-         REAL-TIME SYSTEM ARCHITECTURE & LIVE PROCESS FLOW VISUALIZER
+         ICON-DRIVEN ANIMATED SYSTEM ARCHITECTURE & REAL-TIME FLOW
     ======================================================================= -->
     <section class="bg-white border border-slate-200/90 rounded-xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div class="flex items-center gap-2.5">
           <span id="archLiveDot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
           <div>
-            <h2 class="text-sm font-bold text-slate-900">Alur Kerja &amp; Arsitektur Sistem Real-Time</h2>
-            <p class="text-xs text-slate-500">Visualisasi langsung proses pembacaan sensor, keputusan kendali kipas, dan pengiriman data</p>
+            <h2 class="text-sm font-bold text-slate-900">Bagan Alur Kerja Sistem Real-Time</h2>
+            <p class="text-xs text-slate-500">Visualisasi langsung sensor, kendali otomatis, putaran kipas, dan sinkronisasi data</p>
           </div>
         </div>
         <button onclick="toggleArchPanel()" id="btnToggleArch" class="self-start sm:self-auto text-xs font-medium text-slate-500 hover:text-slate-800 px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
@@ -241,120 +276,132 @@
         </button>
       </div>
 
-      <div id="archPanelBody" class="p-5 bg-slate-50/50">
-        <!-- Responsive 4-Stage Pipeline Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-11 gap-3 items-stretch">
+      <div id="archPanelBody" class="px-4 py-6 sm:px-8 sm:py-7 bg-gradient-to-b from-slate-50/40 to-white">
+        <!-- Visual Icon Pipeline (Horizontal on Desktop, Vertical on Mobile) -->
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-3 lg:gap-2 max-w-5xl mx-auto">
 
-          <!-- STAGE 1: Sensor & Ruang Server -->
-          <div id="nodeSensor" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-1.5">
-                <span class="text-[11px] font-semibold text-slate-400">Tahap 1</span>
-                <span id="nodeSensorBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Offline</span>
+          <!-- ICON NODE 1: Sensor Udara Ruang Server -->
+          <div class="flex flex-col items-center text-center w-44 shrink-0">
+            <div class="relative">
+              <!-- Pulsing Radar Ring when Online -->
+              <span id="sensorPulseRing" class="hidden absolute -inset-1.5 rounded-full bg-sky-400/20 animate-ping"></span>
+              <!-- Main Hardware Icon Circle -->
+              <div id="nodeSensorOrb" class="relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-500 shadow-xs transition-all">
+                <!-- Realistic Thermometer + Humidity Droplet SVG -->
+                <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 6v12.2a4.5 4.5 0 1 1-4 0V6a2 2 0 1 1 4 0Z"/>
+                  <circle cx="12" cy="22" r="1.5" fill="currentColor"/>
+                  <path d="M17 10h2.5M17 14h1.5"/>
+                  <path d="M23.5 14c1.8 2.2 3 4.1 3 5.7a3 3 0 1 1-6 0c0-1.6 1.2-3.5 3-5.7Z" stroke-width="1.8"/>
+                </svg>
+                <!-- Status Mini Badge -->
+                <span id="nodeSensorDot" class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-400 border-2 border-white"></span>
               </div>
-              <h3 class="text-xs font-bold text-slate-900">Sensor Ruang Server</h3>
-              <p class="text-[11px] text-slate-500 mt-0.5">Mengukur suhu &amp; kelembapan di dalam ruang akrilik</p>
             </div>
-            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono-num">
-              <span id="archSensorTemp" class="font-bold text-slate-700">--.- °C</span>
-              <span id="archSensorHum" class="text-slate-500">--.- %</span>
+            <span class="mt-2.5 text-xs font-bold text-slate-800">Sensor Ruangan</span>
+            <div id="archSensorPill" class="mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-mono-num font-semibold text-slate-600">
+              <span id="archSensorTemp">--.-°C</span> &bull; <span id="archSensorHum">--%</span>
             </div>
           </div>
 
-          <!-- CONNECTOR 1 -> 2 -->
-          <div class="lg:col-span-1 flex lg:flex-col items-center justify-center py-1 lg:py-0">
-            <!-- Horizontal pipe on desktop -->
-            <div class="hidden lg:flex flex-col items-center w-full">
-              <span class="text-[10px] text-slate-400 mb-1 font-mono-num">Sinyal</span>
-              <div id="pipe1Desktop" class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
-                <div id="pkt1Desktop" class="hidden w-1/3 h-full bg-sky-500 rounded-full packet-flowing-x"></div>
-              </div>
+          <!-- ANIMATED STREAM 1 -> 2 -->
+          <div class="flex flex-col items-center justify-center w-full lg:flex-1 py-1 lg:py-0">
+            <span id="streamLabel1" class="text-[10px] font-medium text-slate-400 mb-1">Baca suhu</span>
+            <!-- Desktop Horizontal Animated Dots -->
+            <div class="hidden lg:flex items-center w-full">
+              <div id="pipe1Desktop" class="w-full h-1.5 stream-line-x-idle rounded-full"></div>
+              <svg id="arrow1Desktop" class="w-3.5 h-3.5 -ml-1 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
-            <!-- Vertical pipe on mobile -->
-            <div class="flex lg:hidden items-center gap-2">
-              <div class="w-1.5 h-6 bg-slate-200 rounded-full overflow-hidden relative">
-                <div id="pkt1Mobile" class="hidden w-full h-1/2 bg-sky-500 rounded-full packet-flowing-y"></div>
-              </div>
-              <span class="text-[11px] text-slate-400">Kirim bacaan sensor</span>
+            <!-- Mobile Vertical Animated Dots -->
+            <div class="flex lg:hidden flex-col items-center">
+              <div id="pipe1Mobile" class="w-1.5 h-7 stream-line-y-idle rounded-full"></div>
             </div>
           </div>
 
-          <!-- STAGE 2: Mikrokontroler & Evaluasi Ambang -->
-          <div id="nodeController" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-1.5">
-                <span class="text-[11px] font-semibold text-slate-400">Tahap 2</span>
-                <span id="nodeCtrlBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Siaga</span>
+          <!-- ICON NODE 2: Mikrokontroler (Otak Kendali) -->
+          <div class="flex flex-col items-center text-center w-44 shrink-0">
+            <div class="relative">
+              <div id="nodeCtrlOrb" class="relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-500 shadow-xs transition-all">
+                <!-- Realistic IC / Processor Chip with Pins SVG -->
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="5" width="14" height="14" rx="2.5"/>
+                  <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" fill-opacity="0.15"/>
+                  <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>
+                </svg>
+                <span id="nodeCtrlModeTag" class="absolute -top-2 -right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-200 text-slate-600 border border-white">Auto</span>
               </div>
-              <h3 class="text-xs font-bold text-slate-900">Kendali Otomatis</h3>
-              <p class="text-[11px] text-slate-500 mt-0.5">Membandingkan suhu ruang terhadap batas nyala kipas</p>
             </div>
-            <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] font-mono-num text-slate-600 flex items-center justify-between">
+            <span class="mt-2.5 text-xs font-bold text-slate-800">Kendali Otomatis</span>
+            <div id="archCtrlPill" class="mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-mono-num font-medium text-slate-600">
               <span id="archLogicRule">Batas &ge; 28.0°C</span>
-              <span id="archLogicResult" class="font-semibold text-slate-500">-</span>
             </div>
           </div>
 
-          <!-- CONNECTOR 2 -> 3 -->
-          <div class="lg:col-span-1 flex lg:flex-col items-center justify-center py-1 lg:py-0">
-            <div class="hidden lg:flex flex-col items-center w-full">
-              <span class="text-[10px] text-slate-400 mb-1 font-mono-num">Aksi</span>
-              <div id="pipe2Desktop" class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
-                <div id="pkt2Desktop" class="hidden w-1/3 h-full bg-sky-500 rounded-full packet-flowing-x"></div>
-              </div>
+          <!-- ANIMATED STREAM 2 -> 3 -->
+          <div class="flex flex-col items-center justify-center w-full lg:flex-1 py-1 lg:py-0">
+            <span id="archLogicResult" class="text-[10px] font-semibold text-slate-400 mb-1">Siaga</span>
+            <div class="hidden lg:flex items-center w-full">
+              <div id="pipe2Desktop" class="w-full h-1.5 stream-line-x-idle rounded-full"></div>
+              <svg id="arrow2Desktop" class="w-3.5 h-3.5 -ml-1 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
-            <div class="flex lg:hidden items-center gap-2">
-              <div class="w-1.5 h-6 bg-slate-200 rounded-full overflow-hidden relative">
-                <div id="pkt2Mobile" class="hidden w-full h-1/2 bg-sky-500 rounded-full packet-flowing-y"></div>
-              </div>
-              <span class="text-[11px] text-slate-400">Perintah relay &amp; telemetri</span>
+            <div class="flex lg:hidden flex-col items-center">
+              <div id="pipe2Mobile" class="w-1.5 h-7 stream-line-y-idle rounded-full"></div>
             </div>
           </div>
 
-          <!-- STAGE 3: Aktuator Sirkulasi 2 Kipas (Intake & Exhaust) -->
-          <div id="nodeActuator" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-1.5">
-                <span class="text-[11px] font-semibold text-slate-400">Tahap 3</span>
-                <span id="nodeFanBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Berhenti</span>
+          <!-- ICON NODE 3: Kipas Pendingin Fisik (Intake & Exhaust) + Animasi Hembusan Angin -->
+          <div class="flex flex-col items-center text-center w-48 shrink-0">
+            <div class="relative flex items-center justify-center">
+              <div id="nodeFanOrb" class="relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-400 shadow-xs transition-all">
+                <!-- Realistic Multi-Blade Cooling Fan inside Shroud SVG -->
+                <svg id="archFanBigSvg" class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z" fill="currentColor" fill-opacity="0.14"/>
+                  <circle cx="12" cy="12" r="2.2"/>
+                </svg>
               </div>
-              <h3 class="text-xs font-bold text-slate-900">Kipas Intake &amp; Exhaust</h3>
-              <p id="nodeFanDesc" class="text-[11px] text-slate-500 mt-0.5">Mendorong udara panas keluar saat suhu tinggi</p>
+              <!-- Animated Airflow Wave Icon (Only visible & moving when Fan is ON & Online) -->
+              <div id="archWindWaves" class="hidden absolute -right-7 text-sky-500 wind-active">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 8h10a2 2 0 1 0-2-2"/>
+                  <path d="M3 12h14a2 2 0 1 1-2 2"/>
+                  <path d="M3 16h8a2 2 0 1 1-2 2"/>
+                </svg>
+              </div>
             </div>
-            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-              <span id="archFanStateText" class="font-semibold text-slate-500">Relay: Terputus</span>
-              <svg id="archFanMiniSvg" class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></svg>
+            <span class="mt-2.5 text-xs font-bold text-slate-800">2 Kipas Sirkulasi</span>
+            <div id="archFanPill" class="mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-semibold text-slate-500">
+              <span id="archFanStateText">Berhenti</span>
             </div>
           </div>
 
-          <!-- CONNECTOR 3 -> 4 -->
-          <div class="lg:col-span-1 flex lg:flex-col items-center justify-center py-1 lg:py-0">
-            <div class="hidden lg:flex flex-col items-center w-full">
-              <span class="text-[10px] text-slate-400 mb-1 font-mono-num">Cloud</span>
-              <div id="pipe3Desktop" class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
-                <div id="pkt3Desktop" class="hidden w-1/3 h-full bg-emerald-500 rounded-full packet-flowing-x"></div>
-              </div>
+          <!-- ANIMATED STREAM 3 -> 4 -->
+          <div class="flex flex-col items-center justify-center w-full lg:flex-1 py-1 lg:py-0">
+            <span id="streamLabel3" class="text-[10px] font-medium text-slate-400 mb-1">Wi-Fi Cloud</span>
+            <div class="hidden lg:flex items-center w-full">
+              <div id="pipe3Desktop" class="w-full h-1.5 stream-line-x-idle rounded-full"></div>
+              <svg id="arrow3Desktop" class="w-3.5 h-3.5 -ml-1 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
-            <div class="flex lg:hidden items-center gap-2">
-              <div class="w-1.5 h-6 bg-slate-200 rounded-full overflow-hidden relative">
-                <div id="pkt3Mobile" class="hidden w-full h-1/2 bg-emerald-500 rounded-full packet-flowing-y"></div>
-              </div>
-              <span class="text-[11px] text-slate-400">Simpan ke Cloud &amp; Telegram</span>
+            <div class="flex lg:hidden flex-col items-center">
+              <div id="pipe3Mobile" class="w-1.5 h-7 stream-line-y-idle rounded-full"></div>
             </div>
           </div>
 
-          <!-- STAGE 4: Cloud Database, Web & Bot Telegram -->
-          <div id="nodeCloud" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-1.5">
-                <span class="text-[11px] font-semibold text-slate-400">Tahap 4</span>
-                <span id="nodeCloudBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Stanby</span>
+          <!-- ICON NODE 4: Cloud Database & Notifikasi Telegram HP -->
+          <div class="flex flex-col items-center text-center w-44 shrink-0">
+            <div class="relative">
+              <span id="cloudAlertRing" class="hidden absolute -inset-1.5 rounded-full bg-rose-400/25 animate-ping"></span>
+              <div id="nodeCloudOrb" class="relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-500 shadow-xs transition-all">
+                <!-- Realistic Cloud + Telegram Paper Plane SVG -->
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                  <path d="m14 13-3 1.5 1.5 1 1.5-2.5Z" fill="currentColor"/>
+                </svg>
+                <span id="nodeCloudBadge" class="absolute -top-2 -right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-200 text-slate-600 border border-white">Off</span>
               </div>
-              <h3 class="text-xs font-bold text-slate-900">Web &amp; Bot Telegram</h3>
-              <p class="text-[11px] text-slate-500 mt-0.5">Menampilkan grafik &amp; mengirim peringatan ke HP</p>
             </div>
-            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-              <span id="archTelegramText" class="text-slate-500 font-medium">Telegram: Normal</span>
+            <span class="mt-2.5 text-xs font-bold text-slate-800">Web &amp; Telegram</span>
+            <div id="archCloudPill" class="mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-medium text-slate-500">
+              <span id="archTelegramText">Menunggu data</span>
             </div>
           </div>
 
@@ -507,68 +554,88 @@
   </main>
 
   <!-- =========================================================================
-       HIDDEN SETPOINT CONFIGURATION MODAL (OPENED VIA TRIPLE-CLICK ON "Batas: 28.0°C" OR SHIFT+S)
+       CLEAN & MINIMALIST TEMPERATURE SETTING MODAL
   ========================================================================= -->
-  <div id="configModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+  <div id="configModal" onclick="if(event.target===this)closeConfigModal()" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-sm w-full overflow-hidden">
 
-      <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900">Pengaturan Parameter Ambang Suhu</h3>
-          <p class="text-xs text-slate-500">Tersinkron langsung ke Cloud &amp; memori perangkat</p>
-        </div>
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-900">Atur Batas Suhu &amp; Kipas</h3>
         <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
+      <!-- Modal Body -->
       <div class="p-5 space-y-4 text-xs">
+
+        <!-- Quick Presets -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Pilihan cepat skenario uji</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" onclick="applyPreset(26.0, 28.5)" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-slate-700 font-semibold transition-all cursor-pointer">
-              Ruang AC (26°C)
+          <span class="block text-[11px] font-semibold text-slate-500 mb-1.5">Preset cepat</span>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button type="button" onclick="applyPreset(26.0, 28.5)" class="py-1.5 px-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-slate-700 font-semibold transition-all cursor-pointer">
+              26°C (Dingin)
             </button>
-            <button type="button" onclick="applyPreset(28.0, 30.0)" class="px-2.5 py-1.5 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 font-semibold transition-all cursor-pointer">
-              Standar (28°C)
+            <button type="button" onclick="applyPreset(28.0, 30.0)" class="py-1.5 px-2 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 font-semibold transition-all cursor-pointer">
+              28°C (Standar)
             </button>
-            <button type="button" onclick="applyPreset(35.0, 37.0)" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 text-slate-700 font-semibold transition-all cursor-pointer">
-              Non-AC (35°C)
+            <button type="button" onclick="applyPreset(34.0, 36.0)" class="py-1.5 px-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 text-slate-700 font-semibold transition-all cursor-pointer">
+              34°C (Non-AC)
             </button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Stepper 1: Batas Kipas Menyala -->
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80">
           <div>
-            <label for="inputFanOn" class="block text-xs font-semibold text-slate-700 mb-1">Batas kipas menyala (°C)</label>
-            <input type="number" id="inputFanOn" step="0.5" min="18" max="45" value="28.0" oninput="updateHysteresisPreview()" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono-num text-sm font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-sky-500">
-            <p id="previewHysteresis" class="text-[11px] text-slate-500 mt-1">Kipas berhenti di bawah 27.5°C</p>
+            <label for="inputFanOn" class="block text-xs font-bold text-slate-800">Kipas menyala</label>
+            <span id="previewHysteresis" class="text-[11px] text-slate-500">Mati otomatis &lt; 27.5°C</span>
           </div>
-
-          <div>
-            <label for="inputCritical" class="block text-xs font-semibold text-slate-700 mb-1">Batas peringatan darurat (°C)</label>
-            <input type="number" id="inputCritical" step="0.5" min="20" max="50" value="30.0" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono-num text-sm font-bold text-rose-600 focus:outline-hidden focus:ring-2 focus:ring-rose-500">
-            <p class="text-[11px] text-slate-500 mt-1">Memicu notifikasi Telegram</p>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="stepTempInput('inputFanOn', -0.5)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center cursor-pointer">&minus;</button>
+            <input type="number" id="inputFanOn" step="0.5" min="18" max="45" value="28.0" oninput="updateHysteresisPreview()" class="w-16 text-center py-1 rounded-lg bg-white border border-slate-200 font-mono-num text-sm font-bold text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-sky-500">
+            <button type="button" onclick="stepTempInput('inputFanOn', 0.5)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center cursor-pointer">&plus;</button>
           </div>
         </div>
 
+        <!-- Stepper 2: Batas Peringatan Telegram -->
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <div>
+            <label for="inputCritical" class="block text-xs font-bold text-slate-800">Batas darurat</label>
+            <span class="text-[11px] text-slate-500">Kirim pesan Telegram</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="stepTempInput('inputCritical', -0.5)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center cursor-pointer">&minus;</button>
+            <input type="number" id="inputCritical" step="0.5" min="20" max="50" value="30.0" class="w-16 text-center py-1 rounded-lg bg-white border border-slate-200 font-mono-num text-sm font-bold text-rose-600 focus:outline-hidden focus:ring-1 focus:ring-rose-500">
+            <button type="button" onclick="stepTempInput('inputCritical', 0.5)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center cursor-pointer">&plus;</button>
+          </div>
+        </div>
+
+        <!-- Segmented Toggle: Mode Kipas -->
         <div>
-          <label for="selectFanMode" class="block text-xs font-semibold text-slate-700 mb-1">Mode kerja kipas sirkulasi</label>
-          <select id="selectFanMode" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-sky-500">
-            <option value="auto">Otomatis (Mengikuti pembacaan sensor suhu)</option>
-            <option value="manual_on">Manual (Nyalakan kipas terus-menerus)</option>
-          </select>
+          <span class="block text-[11px] font-semibold text-slate-500 mb-1.5">Mode kipas</span>
+          <input type="hidden" id="selectFanMode" value="auto">
+          <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
+            <button type="button" id="btnModeAuto" onclick="setFanModeUI('auto')" class="py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-2xs transition-all cursor-pointer">
+              Otomatis (Sensor)
+            </button>
+            <button type="button" id="btnModeManual" onclick="setFanModeUI('manual_on')" class="py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
+              Nyalakan Terus
+            </button>
+          </div>
         </div>
 
         <div id="configStatusMsg" class="hidden px-3 py-2 rounded-lg text-xs font-medium"></div>
       </div>
 
-      <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
         <button type="button" onclick="closeConfigModal()" class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-xs font-semibold transition-all cursor-pointer">
-          Tutup
+          Batal
         </button>
         <button type="button" id="btnSaveConfig" onclick="saveThresholdConfig()" class="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold active:scale-95 transition-all cursor-pointer">
-          Simpan perubahan
+          Simpan
         </button>
       </div>
 
@@ -693,21 +760,44 @@
       const val = parseFloat(document.getElementById('inputFanOn').value);
       const prev = document.getElementById('previewHysteresis');
       if (!isNaN(val) && prev) {
-        prev.innerText = `Kipas berhenti di bawah ${(val - 0.5).toFixed(1)}°C`;
+        prev.innerText = `Mati otomatis < ${(val - 0.5).toFixed(1)}°C`;
+      }
+    }
+
+    function stepTempInput(inputId, delta) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      let val = parseFloat(el.value);
+      if (isNaN(val)) val = 28.0;
+      val = Math.min(50, Math.max(16, val + delta));
+      el.value = val.toFixed(1);
+      updateHysteresisPreview();
+    }
+
+    function setFanModeUI(modeVal) {
+      document.getElementById('selectFanMode').value = modeVal;
+      const btnAuto = document.getElementById('btnModeAuto');
+      const btnManual = document.getElementById('btnModeManual');
+      if (modeVal === 'auto') {
+        btnAuto.className = "py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-2xs transition-all cursor-pointer";
+        btnManual.className = "py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all cursor-pointer";
+      } else {
+        btnAuto.className = "py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all cursor-pointer";
+        btnManual.className = "py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-white text-sky-700 shadow-2xs transition-all cursor-pointer";
       }
     }
 
     function applyPreset(fanOnVal, critVal) {
       document.getElementById('inputFanOn').value = fanOnVal.toFixed(1);
       document.getElementById('inputCritical').value = critVal.toFixed(1);
-      document.getElementById('selectFanMode').value = 'auto';
+      setFanModeUI('auto');
       updateHysteresisPreview();
     }
 
     function openConfigModal() {
       document.getElementById('inputFanOn').value = thresholdFanOn.toFixed(1);
       document.getElementById('inputCritical').value = thresholdCritical.toFixed(1);
-      document.getElementById('selectFanMode').value = isAutoFanMode ? 'auto' : 'manual_on';
+      setFanModeUI(isAutoFanMode ? 'auto' : 'manual_on');
       updateHysteresisPreview();
 
       const msg = document.getElementById('configStatusMsg');
@@ -1149,116 +1239,182 @@
     }
 
     // =========================================================================
-    // REAL-TIME ARCHITECTURE DIAGRAM CONTROLLER
+    // REAL-TIME ICON-BASED ARCHITECTURE CONTROLLER
     // =========================================================================
     function updateArchitectureUI(record) {
-      const archLiveDot = document.getElementById('archLiveDot');
-      const nodeSensor = document.getElementById('nodeSensor');
-      const nodeSensorBadge = document.getElementById('nodeSensorBadge');
-      const archSensorTemp = document.getElementById('archSensorTemp');
-      const archSensorHum = document.getElementById('archSensorHum');
-
-      const nodeController = document.getElementById('nodeController');
-      const nodeCtrlBadge = document.getElementById('nodeCtrlBadge');
-      const archLogicResult = document.getElementById('archLogicResult');
-
-      const nodeActuator = document.getElementById('nodeActuator');
-      const nodeFanBadge = document.getElementById('nodeFanBadge');
-      const archFanStateText = document.getElementById('archFanStateText');
-      const archFanMiniSvg = document.getElementById('archFanMiniSvg');
-
-      const nodeCloud = document.getElementById('nodeCloud');
-      const nodeCloudBadge = document.getElementById('nodeCloudBadge');
-      const archTelegramText = document.getElementById('archTelegramText');
-
-      const packets = ['pkt1Desktop', 'pkt1Mobile', 'pkt2Desktop', 'pkt2Mobile', 'pkt3Desktop', 'pkt3Mobile'];
-
       if (!record) return;
       const temp = parseFloat(record.temperature);
       const hum = parseFloat(record.humidity);
       const fanOn = Boolean(record.fan_status);
 
-      archSensorTemp.innerText = `${temp.toFixed(1)} °C`;
-      archSensorHum.innerText = `${hum.toFixed(1)} %`;
+      const archLiveDot = document.getElementById('archLiveDot');
+
+      // Stage 1: Sensor Orb & Elements
+      const sensorPulseRing = document.getElementById('sensorPulseRing');
+      const nodeSensorOrb = document.getElementById('nodeSensorOrb');
+      const nodeSensorDot = document.getElementById('nodeSensorDot');
+      const archSensorPill = document.getElementById('archSensorPill');
+      const archSensorTemp = document.getElementById('archSensorTemp');
+      const archSensorHum = document.getElementById('archSensorHum');
+
+      // Stream 1 -> 2
+      const pipe1Desktop = document.getElementById('pipe1Desktop');
+      const pipe1Mobile = document.getElementById('pipe1Mobile');
+      const arrow1Desktop = document.getElementById('arrow1Desktop');
+      const streamLabel1 = document.getElementById('streamLabel1');
+
+      // Stage 2: Controller Chip Orb
+      const nodeCtrlOrb = document.getElementById('nodeCtrlOrb');
+      const nodeCtrlModeTag = document.getElementById('nodeCtrlModeTag');
+      const archCtrlPill = document.getElementById('archCtrlPill');
+
+      // Stream 2 -> 3
+      const archLogicResult = document.getElementById('archLogicResult');
+      const pipe2Desktop = document.getElementById('pipe2Desktop');
+      const pipe2Mobile = document.getElementById('pipe2Mobile');
+      const arrow2Desktop = document.getElementById('arrow2Desktop');
+
+      // Stage 3: Cooling Fan Orb + Wind Waves
+      const nodeFanOrb = document.getElementById('nodeFanOrb');
+      const archFanBigSvg = document.getElementById('archFanBigSvg');
+      const archWindWaves = document.getElementById('archWindWaves');
+      const archFanPill = document.getElementById('archFanPill');
+      const archFanStateText = document.getElementById('archFanStateText');
+
+      // Stream 3 -> 4
+      const pipe3Desktop = document.getElementById('pipe3Desktop');
+      const pipe3Mobile = document.getElementById('pipe3Mobile');
+      const arrow3Desktop = document.getElementById('arrow3Desktop');
+      const streamLabel3 = document.getElementById('streamLabel3');
+
+      // Stage 4: Cloud & Telegram Orb
+      const cloudAlertRing = document.getElementById('cloudAlertRing');
+      const nodeCloudOrb = document.getElementById('nodeCloudOrb');
+      const nodeCloudBadge = document.getElementById('nodeCloudBadge');
+      const archCloudPill = document.getElementById('archCloudPill');
+      const archTelegramText = document.getElementById('archTelegramText');
+
+      archSensorTemp.innerText = `${temp.toFixed(1)}°C`;
+      archSensorHum.innerText = `${hum.toFixed(0)}%`;
 
       if (!isDeviceOnline) {
-        // Offline architecture state: pause all animated packets
+        // =================== OFFLINE STATE (ALL ICONS CALM & STILL) ===================
         archLiveDot.className = "w-2.5 h-2.5 rounded-full bg-slate-300";
-        packets.forEach(id => document.getElementById(id).classList.add('hidden'));
 
-        nodeSensor.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
-        nodeSensorBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
-        nodeSensorBadge.innerText = "Offline";
+        sensorPulseRing.classList.add('hidden');
+        nodeSensorOrb.className = "relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-400 transition-all";
+        nodeSensorDot.className = "absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-400 border-2 border-white";
+        archSensorPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-mono-num font-semibold text-slate-500";
 
-        nodeController.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
-        nodeCtrlBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
-        nodeCtrlBadge.innerText = "Nonaktif";
-        archLogicResult.className = "font-semibold text-slate-400";
-        archLogicResult.innerText = "Menunggu";
+        pipe1Desktop.className = "w-full h-1.5 stream-line-x-idle rounded-full";
+        pipe1Mobile.className = "w-1.5 h-7 stream-line-y-idle rounded-full";
+        arrow1Desktop.className = "w-3.5 h-3.5 -ml-1 text-slate-300 shrink-0";
+        streamLabel1.className = "text-[10px] font-medium text-slate-400 mb-1";
+        streamLabel1.innerText = "Terputus";
 
-        nodeActuator.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
-        nodeFanBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
-        nodeFanBadge.innerText = "Berhenti";
-        archFanStateText.className = "font-semibold text-slate-500";
-        archFanStateText.innerText = "Kipas berhenti";
-        archFanMiniSvg.classList.remove('fan-spinning');
-        archFanMiniSvg.className = "w-3.5 h-3.5 text-slate-400";
+        nodeCtrlOrb.className = "relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-400 transition-all";
+        nodeCtrlModeTag.className = "absolute -top-2 -right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-200 text-slate-500 border border-white";
+        nodeCtrlModeTag.innerText = "Off";
+        archCtrlPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-mono-num font-medium text-slate-500";
 
-        nodeCloud.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
-        nodeCloudBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
+        archLogicResult.className = "text-[10px] font-medium text-slate-400 mb-1";
+        archLogicResult.innerText = "Nonaktif";
+        pipe2Desktop.className = "w-full h-1.5 stream-line-x-idle rounded-full";
+        pipe2Mobile.className = "w-1.5 h-7 stream-line-y-idle rounded-full";
+        arrow2Desktop.className = "w-3.5 h-3.5 -ml-1 text-slate-300 shrink-0";
+
+        nodeFanOrb.className = "relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-400 transition-all";
+        archFanBigSvg.classList.remove('fan-spinning');
+        archWindWaves.classList.add('hidden');
+        archFanPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-semibold text-slate-500";
+        archFanStateText.innerText = "Berhenti";
+
+        pipe3Desktop.className = "w-full h-1.5 stream-line-x-idle rounded-full";
+        pipe3Mobile.className = "w-1.5 h-7 stream-line-y-idle rounded-full";
+        arrow3Desktop.className = "w-3.5 h-3.5 -ml-1 text-slate-300 shrink-0";
+        streamLabel3.className = "text-[10px] font-medium text-slate-400 mb-1";
+        streamLabel3.innerText = "Offline";
+
+        cloudAlertRing.classList.add('hidden');
+        nodeCloudOrb.className = "relative w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-400 transition-all";
+        nodeCloudBadge.className = "absolute -top-2 -right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-200 text-slate-500 border border-white";
         nodeCloudBadge.innerText = "Arsip";
-        archTelegramText.className = "text-slate-500 font-medium";
-        archTelegramText.innerText = "Menunggu perangkat aktif";
+        archCloudPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-medium text-slate-500";
+        archTelegramText.innerText = "Data terakhir";
         return;
       }
 
-      // Online architecture state: activate animated data packets
+      // =================== ONLINE STATE (ANIMATED ICONS & FLOWING STREAMS) ===================
       archLiveDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-      packets.forEach(id => document.getElementById(id).classList.remove('hidden'));
 
-      nodeSensor.className = "lg:col-span-2 bg-white border border-sky-200 rounded-xl p-3.5 flex flex-col justify-between";
-      nodeSensorBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700";
-      nodeSensorBadge.innerText = "Membaca";
+      // Stage 1: Sensor Active
+      sensorPulseRing.classList.remove('hidden');
+      nodeSensorOrb.className = "relative w-16 h-16 rounded-2xl bg-sky-50 border-2 border-sky-300 flex items-center justify-center text-sky-600 shadow-xs transition-all";
+      nodeSensorDot.className = "absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white";
+      archSensorPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-sky-50 border border-sky-200 text-[11px] font-mono-num font-bold text-sky-800";
 
-      nodeController.className = "lg:col-span-2 bg-white border border-sky-200 rounded-xl p-3.5 flex flex-col justify-between";
-      nodeCtrlBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-50 text-sky-700";
-      nodeCtrlBadge.innerText = isAutoFanMode ? "Otomatis" : "Manual";
+      // Stream 1 -> 2 Flowing
+      pipe1Desktop.className = "w-full h-1.5 stream-line-x rounded-full";
+      pipe1Mobile.className = "w-1.5 h-7 stream-line-y rounded-full";
+      arrow1Desktop.className = "w-3.5 h-3.5 -ml-1 text-sky-500 shrink-0";
+      streamLabel1.className = "text-[10px] font-semibold text-sky-600 mb-1";
+      streamLabel1.innerText = "Sinyal live";
 
+      // Stage 2: Controller Chip Active
+      nodeCtrlOrb.className = "relative w-16 h-16 rounded-2xl bg-indigo-50/70 border-2 border-indigo-300 flex items-center justify-center text-indigo-600 icon-halo-active transition-all";
+      nodeCtrlModeTag.className = "absolute -top-2 -right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-600 text-white border border-white";
+      nodeCtrlModeTag.innerText = isAutoFanMode ? "Auto" : "Manual";
+      archCtrlPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-indigo-50/70 border border-indigo-200 text-[11px] font-mono-num font-semibold text-indigo-800";
+
+      // Stage 3: Cooling Fan + Stream 2 -> 3
       if (fanOn) {
-        archLogicResult.className = "font-semibold text-amber-600";
-        archLogicResult.innerText = "Picu Relay ON";
+        archLogicResult.className = "text-[10px] font-bold text-sky-600 mb-1";
+        archLogicResult.innerText = "Relay ON";
+        pipe2Desktop.className = "w-full h-1.5 stream-line-x rounded-full";
+        pipe2Mobile.className = "w-1.5 h-7 stream-line-y rounded-full";
+        arrow2Desktop.className = "w-3.5 h-3.5 -ml-1 text-sky-500 shrink-0";
 
-        nodeActuator.className = "lg:col-span-2 bg-sky-50/40 border border-sky-300 rounded-xl p-3.5 flex flex-col justify-between";
-        nodeFanBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-600 text-white";
-        nodeFanBadge.innerText = "Menyala";
-        archFanStateText.className = "font-semibold text-sky-700";
-        archFanStateText.innerText = "Aliran udara aktif";
-        archFanMiniSvg.className = "w-3.5 h-3.5 text-sky-600 fan-spinning";
+        nodeFanOrb.className = "relative w-16 h-16 rounded-2xl bg-sky-600 border-2 border-sky-500 flex items-center justify-center text-white shadow-sm transition-all";
+        archFanBigSvg.classList.add('fan-spinning');
+        archWindWaves.classList.remove('hidden');
+        archFanPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-sky-100 border border-sky-300 text-[11px] font-bold text-sky-800";
+        archFanStateText.innerText = "Menyala • Mendinginkan";
       } else {
-        archLogicResult.className = "font-semibold text-emerald-600";
-        archLogicResult.innerText = "Relay OFF";
+        archLogicResult.className = "text-[10px] font-semibold text-emerald-600 mb-1";
+        archLogicResult.innerText = "Suhu Aman";
+        pipe2Desktop.className = "w-full h-1.5 stream-line-x-idle rounded-full";
+        pipe2Mobile.className = "w-1.5 h-7 stream-line-y-idle rounded-full";
+        arrow2Desktop.className = "w-3.5 h-3.5 -ml-1 text-slate-300 shrink-0";
 
-        nodeActuator.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between";
-        nodeFanBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600";
-        nodeFanBadge.innerText = "Standby";
-        archFanStateText.className = "font-semibold text-slate-500";
-        archFanStateText.innerText = "Kipas diam (Suhu aman)";
-        archFanMiniSvg.classList.remove('fan-spinning');
-        archFanMiniSvg.className = "w-3.5 h-3.5 text-slate-400";
+        nodeFanOrb.className = "relative w-16 h-16 rounded-2xl bg-white border-2 border-slate-300 flex items-center justify-center text-slate-500 transition-all";
+        archFanBigSvg.classList.remove('fan-spinning');
+        archWindWaves.classList.add('hidden');
+        archFanPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-semibold text-slate-600";
+        archFanStateText.innerText = "Standby (Diam)";
       }
 
+      // Stream 3 -> 4 Flowing
+      pipe3Desktop.className = "w-full h-1.5 stream-line-x-emerald rounded-full";
+      pipe3Mobile.className = "w-1.5 h-7 stream-line-y rounded-full";
+      arrow3Desktop.className = "w-3.5 h-3.5 -ml-1 text-emerald-500 shrink-0";
+      streamLabel3.className = "text-[10px] font-semibold text-emerald-600 mb-1";
+      streamLabel3.innerText = "Kirim data";
+
+      // Stage 4: Cloud & Telegram Alert
       if (temp >= thresholdCritical) {
-        nodeCloud.className = "lg:col-span-2 bg-rose-50/40 border border-rose-300 rounded-xl p-3.5 flex flex-col justify-between";
-        nodeCloudBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-rose-600 text-white";
-        nodeCloudBadge.innerText = "Darurat";
-        archTelegramText.className = "text-rose-700 font-semibold";
-        archTelegramText.innerText = "Notifikasi Telegram terkirim!";
+        cloudAlertRing.classList.remove('hidden');
+        nodeCloudOrb.className = "relative w-16 h-16 rounded-2xl bg-rose-600 border-2 border-rose-500 flex items-center justify-center text-white shadow-sm transition-all";
+        nodeCloudBadge.className = "absolute -top-2 -right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-amber-400 text-slate-950 border border-white";
+        nodeCloudBadge.innerText = "Alert!";
+        archCloudPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-rose-100 border border-rose-300 text-[11px] font-bold text-rose-700";
+        archTelegramText.innerText = "Pesan Telegram terkirim!";
       } else {
-        nodeCloud.className = "lg:col-span-2 bg-white border border-emerald-200 rounded-xl p-3.5 flex flex-col justify-between";
-        nodeCloudBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700";
-        nodeCloudBadge.innerText = "Tersinkron";
-        archTelegramText.className = "text-emerald-700 font-medium";
-        archTelegramText.innerText = "Telegram: Siaga normal";
+        cloudAlertRing.classList.add('hidden');
+        nodeCloudOrb.className = "relative w-16 h-16 rounded-2xl bg-emerald-50 border-2 border-emerald-300 flex items-center justify-center text-emerald-600 shadow-xs transition-all";
+        nodeCloudBadge.className = "absolute -top-2 -right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-600 text-white border border-white";
+        nodeCloudBadge.innerText = "Live";
+        archCloudPill.className = "mt-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-semibold text-emerald-700";
+        archTelegramText.innerText = "Cloud & Telegram Siaga";
       }
     }
 
