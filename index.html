@@ -3,56 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Monitoring & Kendali Sirkulasi Ruang Server — Capstone C1</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+  <title>Monitoring & Kendali Sirkulasi Ruang Server — Kelompok C1</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230f172a%22/><text x=%2250%22 y=%2268%22 font-family=%22sans-serif%22 font-weight=%22800%22 font-size=%2248%22 fill=%22%23ffffff%22 text-anchor=%22middle%22>C1</text></svg>">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              500: '#0284c7',
-              600: '#0369a1',
-              700: '#075985',
-              900: '#0c4a6e',
-            }
-          }
-        }
-      }
-    }
-  </script>
 
-  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Chart.js CDN -->
+  <!-- Chart.js & Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f6f8fa;
       color: #0f172a;
+      -webkit-font-smoothing: antialiased;
     }
-    .font-mono {
+    .font-mono-num {
       font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
     }
     @keyframes spin-fan {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
     .fan-spinning {
-      animation: spin-fan 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      animation: spin-fan 0.9s linear infinite;
+    }
+    @keyframes flow-packet-x {
+      0% { transform: translateX(-100%); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateX(220%); opacity: 0; }
+    }
+    .packet-flowing-x {
+      animation: flow-packet-x 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes flow-packet-y {
+      0% { transform: translateY(-100%); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateY(220%); opacity: 0; }
+    }
+    .packet-flowing-y {
+      animation: flow-packet-y 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
@@ -68,84 +68,59 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
-    .card-elevated {
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .card-elevated:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
-    }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50/70 selection:bg-sky-500 selection:text-white flex flex-col justify-between">
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-600 selection:text-white">
 
   <!-- =========================================================================
-       TOP GLOBAL NAVIGATION HEADER
+       TOP NAVIGATION HEADER
   ========================================================================= -->
-  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-      
-      <!-- Brand & Project Title -->
-      <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-sm shadow-sm ring-1 ring-slate-800 shrink-0">
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+      <!-- Title & Institution -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-xs tracking-tight shrink-0 shadow-2xs">
           C1
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 whitespace-nowrap">
-              SISTEM KENDALI TERMAL RUANG SERVER
-            </h1>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 font-mono whitespace-nowrap">
-              SCADA IoT
-            </span>
-          </div>
-          <p class="text-[11px] sm:text-xs text-slate-500 font-medium truncate">
-            Departemen Teknik Elektro FTEIC &bull; Institut Teknologi Sepuluh Nopember
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">
+            Monitoring &amp; Kendali Sirkulasi Ruang Server
+          </h1>
+          <p class="text-xs text-slate-500 truncate">
+            Kelompok C1 &bull; Departemen Teknik Elektro FTEIC ITS
           </p>
         </div>
       </div>
 
-      <!-- Action Toolbar & Heartbeat -->
-      <div class="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 shrink-0">
-        
-        <!-- Hardware Meta Pill -->
-        <div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100/80 border border-slate-200/80 text-xs text-slate-600 font-mono">
-          <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
-          <span>ESP32 &bull; Baterai 3S (12V)</span>
-        </div>
+      <!-- Status Pill & Action Controls -->
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
 
-        <!-- Heartbeat Indicator -->
-        <div id="heartbeatPill" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600 transition-all">
+        <!-- Live / Offline Connection Status Pill -->
+        <div id="heartbeatPill" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600 transition-colors">
           <span id="heartbeatDot" class="relative flex h-2 w-2">
             <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
           </span>
-          <span id="heartbeatText" class="font-mono text-[11px] font-semibold whitespace-nowrap">MEMERIKSA KONEKSI...</span>
+          <span id="heartbeatText" class="text-xs font-semibold whitespace-nowrap">Memeriksa koneksi...</span>
         </div>
 
-        <!-- Setpoint Suhu Config Button -->
-        <button id="btnConfig" onclick="openConfigModal()" title="Atur Parameter Ambang Suhu & Mode Kipas" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-50 border border-sky-200 text-xs font-semibold text-sky-700 hover:bg-sky-100/80 hover:border-sky-300 shadow-2xs active:scale-95 transition-all">
-          <svg class="w-3.5 h-3.5 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span class="whitespace-nowrap">Atur Suhu</span>
-          <span id="headerSetpointBadge" class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-white text-sky-800 border border-sky-200">28.0°C</span>
-        </button>
-
-        <!-- Audio Alert Toggle Button -->
-        <button id="btnSound" onclick="toggleAudioAlert()" title="Bunyikan Alarm Web saat Suhu Kritis" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-95 transition-all">
+        <!-- Audio Alarm Toggle -->
+        <button id="btnSound" onclick="toggleAudioAlert()" title="Aktifkan suara peringatan ketika perangkat online dan suhu melewati batas kritis" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all cursor-pointer">
           <svg id="iconSoundMuted" class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
           <svg id="iconSoundActive" class="w-3.5 h-3.5 text-rose-600 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          <span id="textSound" class="hidden sm:inline font-mono text-[11px]">Alarm: Off</span>
+          <span id="textSound" class="text-xs">Suara: Mati</span>
         </button>
 
-        <!-- Manual Refresh Button -->
-        <button id="btnRefresh" onclick="manualRefresh()" title="Sinkronisasi Ulang Data" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-95 transition-all">
+        <!-- Manual Refresh -->
+        <button id="btnRefresh" onclick="manualRefresh()" title="Segarkan data dari server" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all cursor-pointer">
           <svg id="iconRefresh" class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-          <span class="hidden sm:inline">Refresh</span>
+          <span class="hidden sm:inline">Segarkan</span>
         </button>
 
-        <!-- CSV Export Button -->
-        <button onclick="exportToCSV()" title="Ekspor Data Telemetri ke CSV" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 shadow-2xs active:scale-95 transition-all">
+        <!-- CSV Download -->
+        <button onclick="exportToCSV()" title="Unduh rekaman data dalam format CSV" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 active:scale-95 transition-all cursor-pointer">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-          <span class="whitespace-nowrap">Unduh Log</span>
+          <span>Unduh CSV</span>
         </button>
 
       </div>
@@ -156,322 +131,444 @@
   <!-- =========================================================================
        MAIN CONTENT CONTAINER
   ========================================================================= -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 flex-1 w-full">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 flex-1 w-full">
 
-    <!-- KPI Metric Cards (4 Columns) -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+    <!-- Offline Notice Banner (Automatically shown only when device is offline) -->
+    <div id="offlineBanner" class="hidden rounded-xl bg-slate-100 border border-slate-200/90 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-600">
+      <div class="flex items-center gap-2.5">
+        <span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
+        <span><strong class="text-slate-800">Perangkat sedang tidak terhubung (Offline).</strong> Angka suhu dan kelembapan di bawah adalah rekaman terakhir sebelum perangkat dimatikan. Kipas sirkulasi dan alarm otomatis dinonaktifkan.</span>
+      </div>
+      <span id="offlineLastSeen" class="font-mono-num text-[11px] text-slate-500 shrink-0"></span>
+    </div>
 
-      <!-- Card 1: Suhu Ruang -->
-      <div id="cardTemp" class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+    <!-- =======================================================================
+         PRIMARY METRIC CARDS (4 COLUMNS)
+    ======================================================================= -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <!-- Card 1: Suhu Ruang Server -->
+      <div id="cardTemp" class="bg-white border border-slate-200/90 rounded-xl p-5 transition-colors">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Suhu Ruang Uji</span>
-          <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/><path d="M12 2v2"/><path d="M12 9v4"/></svg>
+          <span class="text-xs font-semibold text-slate-500">Suhu ruang server</span>
+          <div id="tempIconBox" class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>
           </div>
         </div>
-        <div class="flex items-baseline space-x-1 my-1">
-          <span id="valTemp" class="text-4xl font-extrabold font-mono tracking-tight text-slate-900">--.-</span>
-          <span class="text-lg font-semibold text-slate-400">°C</span>
+        <div class="flex items-baseline gap-1 my-1">
+          <span id="valTemp" class="text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-slate-900">--.-</span>
+          <span class="text-base font-semibold text-slate-400">°C</span>
         </div>
-        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span id="badgeTemp" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+          <span id="badgeTemp" class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
             Menunggu data...
           </span>
-          <button onclick="openConfigModal()" id="labelThresholdCard" title="Klik untuk ubah batas suhu kipas" class="text-[10px] text-sky-600 hover:text-sky-800 font-mono font-semibold underline decoration-dotted cursor-pointer transition-colors">Batas: 28.0°C ✎</button>
+          <!-- Hidden backdoor trigger: Triple-click to open Setpoint Config Modal -->
+          <span id="labelThresholdCard" onclick="handleSecretTrigger()" class="text-[11px] text-slate-400 font-mono-num select-none cursor-default">Batas: 28.0°C</span>
         </div>
       </div>
 
-      <!-- Card 2: Kelembapan Relatif -->
-      <div id="cardHum" class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+      <!-- Card 2: Kelembapan Udara -->
+      <div id="cardHum" class="bg-white border border-slate-200/90 rounded-xl p-5 transition-colors">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Kelembapan Udara</span>
-          <div class="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
+          <span class="text-xs font-semibold text-slate-500">Kelembapan udara</span>
+          <div class="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>
           </div>
         </div>
-        <div class="flex items-baseline space-x-1 my-1">
-          <span id="valHum" class="text-4xl font-extrabold font-mono tracking-tight text-slate-900">--.-</span>
-          <span class="text-lg font-semibold text-slate-400">%RH</span>
+        <div class="flex items-baseline gap-1 my-1">
+          <span id="valHum" class="text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-slate-900">--.-</span>
+          <span class="text-base font-semibold text-slate-400">%</span>
         </div>
-        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span id="badgeHum" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-            Standar ASHRAE TC 9.9
+        <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+          <span id="badgeHum" class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+            Menunggu data...
           </span>
-          <span class="text-[10px] text-slate-500 font-mono font-medium">Ideal: 40–60%</span>
+          <span class="text-[11px] text-slate-400 font-mono-num">Ideal: 40–60%</span>
         </div>
       </div>
 
-      <!-- Card 3: Sirkulasi Kipas Push-Pull -->
-      <div id="cardFan" class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+      <!-- Card 3: Sirkulasi Kipas (Intake & Exhaust) -->
+      <div id="cardFan" class="bg-white border border-slate-200/90 rounded-xl p-5 transition-colors">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Sirkulasi Kipas</span>
-          <div id="fanIconWrapper" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
+          <span class="text-xs font-semibold text-slate-500">Sirkulasi udara (2 kipas)</span>
+          <div id="fanIconWrapper" class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
             <svg id="fanIconSvg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/><circle cx="12" cy="12" r="2"/></svg>
           </div>
         </div>
-        <div class="my-1">
-          <span id="valFan" class="text-2xl font-bold font-mono tracking-tight text-slate-600">STANDBY</span>
+        <div class="my-1.5">
+          <span id="valFan" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-600">Berhenti</span>
         </div>
         <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span id="subFan" class="text-[11px] text-slate-500 font-medium">
-            Ventilasi Pasif (Kipas Off)
+          <span id="subFan" class="text-xs text-slate-500">
+            Menunggu koneksi perangkat
           </span>
         </div>
       </div>
 
-      <!-- Card 4: Waktu Sinkronisasi & Telemetri -->
-      <div class="card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+      <!-- Card 4: Status Transmisi & Pembaruan -->
+      <div id="cardSync" class="bg-white border border-slate-200/90 rounded-xl p-5 transition-colors">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Interval Siklus</span>
-          <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+          <span class="text-xs font-semibold text-slate-500">Status aliran data</span>
+          <div id="syncIconBox" class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           </div>
         </div>
-        <div class="flex items-baseline space-x-1 my-1">
-          <span class="text-4xl font-extrabold font-mono tracking-tight text-slate-900">5.0</span>
-          <span class="text-lg font-semibold text-slate-400">Detik</span>
+        <div class="flex items-baseline gap-1.5 my-1.5">
+          <span id="valSyncState" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-600">Terputus</span>
         </div>
         <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span id="valLastSync" class="text-[11px] text-slate-500 font-mono font-medium">Pembaruan: Menunggu...</span>
+          <span id="valLastSync" class="text-xs text-slate-500 font-mono-num">Rekaman: Menunggu...</span>
         </div>
       </div>
 
     </section>
 
-    <!-- Quick Stats Bar (Min / Max / Avg Statistical Analytics) -->
-    <section class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+    <!-- =======================================================================
+         REAL-TIME SYSTEM ARCHITECTURE & LIVE PROCESS FLOW VISUALIZER
+    ======================================================================= -->
+    <section class="bg-white border border-slate-200/90 rounded-xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <span id="archLiveDot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Alur Kerja &amp; Arsitektur Sistem Real-Time</h2>
+            <p class="text-xs text-slate-500">Visualisasi langsung proses pembacaan sensor, keputusan kendali kipas, dan pengiriman data</p>
+          </div>
+        </div>
+        <button onclick="toggleArchPanel()" id="btnToggleArch" class="self-start sm:self-auto text-xs font-medium text-slate-500 hover:text-slate-800 px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
+          Sembunyikan bagan
+        </button>
+      </div>
+
+      <div id="archPanelBody" class="p-5 bg-slate-50/50">
+        <!-- Responsive 4-Stage Pipeline Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-11 gap-3 items-stretch">
+
+          <!-- STAGE 1: Sensor & Ruang Server -->
+          <div id="nodeSensor" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-[11px] font-semibold text-slate-400">Tahap 1</span>
+                <span id="nodeSensorBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Offline</span>
+              </div>
+              <h3 class="text-xs font-bold text-slate-900">Sensor Ruang Server</h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">Mengukur suhu &amp; kelembapan di dalam ruang akrilik</p>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono-num">
+              <span id="archSensorTemp" class="font-bold text-slate-700">--.- °C</span>
+              <span id="archSensorHum" class="text-slate-500">--.- %</span>
+            </div>
+          </div>
+
+          <!-- CONNECTOR 1 -> 2 -->
+          <div class="lg:col-span-1 flex lg:flex-col items-center justify-center py-1 lg:py-0">
+            <!-- Horizontal pipe on desktop -->
+            <div class="hidden lg:flex flex-col items-center w-full">
+              <span class="text-[10px] text-slate-400 mb-1 font-mono-num">Sinyal</span>
+              <div id="pipe1Desktop" class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
+                <div id="pkt1Desktop" class="hidden w-1/3 h-full bg-sky-500 rounded-full packet-flowing-x"></div>
+              </div>
+            </div>
+            <!-- Vertical pipe on mobile -->
+            <div class="flex lg:hidden items-center gap-2">
+              <div class="w-1.5 h-6 bg-slate-200 rounded-full overflow-hidden relative">
+                <div id="pkt1Mobile" class="hidden w-full h-1/2 bg-sky-500 rounded-full packet-flowing-y"></div>
+              </div>
+              <span class="text-[11px] text-slate-400">Kirim bacaan sensor</span>
+            </div>
+          </div>
+
+          <!-- STAGE 2: Mikrokontroler & Evaluasi Ambang -->
+          <div id="nodeController" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-[11px] font-semibold text-slate-400">Tahap 2</span>
+                <span id="nodeCtrlBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Siaga</span>
+              </div>
+              <h3 class="text-xs font-bold text-slate-900">Kendali Otomatis</h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">Membandingkan suhu ruang terhadap batas nyala kipas</p>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] font-mono-num text-slate-600 flex items-center justify-between">
+              <span id="archLogicRule">Batas &ge; 28.0°C</span>
+              <span id="archLogicResult" class="font-semibold text-slate-500">-</span>
+            </div>
+          </div>
+
+          <!-- CONNECTOR 2 -> 3 -->
+          <div class="lg:col-span-1 flex lg:flex-col items-center justify-center py-1 lg:py-0">
+            <div class="hidden lg:flex flex-col items-center w-full">
+              <span class="text-[10px] text-slate-400 mb-1 font-mono-num">Aksi</span>
+              <div id="pipe2Desktop" class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
+                <div id="pkt2Desktop" class="hidden w-1/3 h-full bg-sky-500 rounded-full packet-flowing-x"></div>
+              </div>
+            </div>
+            <div class="flex lg:hidden items-center gap-2">
+              <div class="w-1.5 h-6 bg-slate-200 rounded-full overflow-hidden relative">
+                <div id="pkt2Mobile" class="hidden w-full h-1/2 bg-sky-500 rounded-full packet-flowing-y"></div>
+              </div>
+              <span class="text-[11px] text-slate-400">Perintah relay &amp; telemetri</span>
+            </div>
+          </div>
+
+          <!-- STAGE 3: Aktuator Sirkulasi 2 Kipas (Intake & Exhaust) -->
+          <div id="nodeActuator" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-[11px] font-semibold text-slate-400">Tahap 3</span>
+                <span id="nodeFanBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Berhenti</span>
+              </div>
+              <h3 class="text-xs font-bold text-slate-900">Kipas Intake &amp; Exhaust</h3>
+              <p id="nodeFanDesc" class="text-[11px] text-slate-500 mt-0.5">Mendorong udara panas keluar saat suhu tinggi</p>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span id="archFanStateText" class="font-semibold text-slate-500">Relay: Terputus</span>
+              <svg id="archFanMiniSvg" class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></svg>
+            </div>
+          </div>
+
+          <!-- CONNECTOR 3 -> 4 -->
+          <div class="lg:col-span-1 flex lg:flex-col items-center justify-center py-1 lg:py-0">
+            <div class="hidden lg:flex flex-col items-center w-full">
+              <span class="text-[10px] text-slate-400 mb-1 font-mono-num">Cloud</span>
+              <div id="pipe3Desktop" class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
+                <div id="pkt3Desktop" class="hidden w-1/3 h-full bg-emerald-500 rounded-full packet-flowing-x"></div>
+              </div>
+            </div>
+            <div class="flex lg:hidden items-center gap-2">
+              <div class="w-1.5 h-6 bg-slate-200 rounded-full overflow-hidden relative">
+                <div id="pkt3Mobile" class="hidden w-full h-1/2 bg-emerald-500 rounded-full packet-flowing-y"></div>
+              </div>
+              <span class="text-[11px] text-slate-400">Simpan ke Cloud &amp; Telegram</span>
+            </div>
+          </div>
+
+          <!-- STAGE 4: Cloud Database, Web & Bot Telegram -->
+          <div id="nodeCloud" class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between transition-all">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-[11px] font-semibold text-slate-400">Tahap 4</span>
+                <span id="nodeCloudBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Stanby</span>
+              </div>
+              <h3 class="text-xs font-bold text-slate-900">Web &amp; Bot Telegram</h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">Menampilkan grafik &amp; mengirim peringatan ke HP</p>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span id="archTelegramText" class="text-slate-500 font-medium">Telegram: Normal</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         SUMMARY STATISTICS BAR
+    ======================================================================= -->
+    <section class="bg-white border border-slate-200/90 rounded-xl p-4 sm:p-5">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-        
-        <div class="pt-2 md:pt-0 md:px-3">
-          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Suhu Rata-rata</span>
-          <div class="flex items-baseline space-x-1 mt-1">
-            <span id="statAvgTemp" class="text-xl font-bold font-mono text-slate-800">--.-</span>
-            <span class="text-xs text-slate-500">°C</span>
+        <div class="pt-2 md:pt-0 md:px-3 first:pt-0">
+          <span class="text-xs text-slate-500">Rata-rata suhu</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span id="statAvgTemp" class="text-lg sm:text-xl font-bold font-mono-num text-slate-900">--.-</span>
+            <span class="text-xs text-slate-400">°C</span>
           </div>
         </div>
 
         <div class="pt-2 md:pt-0 md:px-3">
-          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Suhu Puncak (Maks)</span>
-          <div class="flex items-baseline space-x-1 mt-1">
-            <span id="statMaxTemp" class="text-xl font-bold font-mono text-amber-600">--.-</span>
-            <span class="text-xs text-slate-500">°C</span>
+          <span class="text-xs text-slate-500">Suhu tertinggi tercatat</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span id="statMaxTemp" class="text-lg sm:text-xl font-bold font-mono-num text-amber-600">--.-</span>
+            <span class="text-xs text-slate-400">°C</span>
           </div>
         </div>
 
         <div class="pt-2 md:pt-0 md:px-3">
-          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Kelembapan Rata-rata</span>
-          <div class="flex items-baseline space-x-1 mt-1">
-            <span id="statAvgHum" class="text-xl font-bold font-mono text-slate-800">--.-</span>
-            <span class="text-xs text-slate-500">%</span>
+          <span class="text-xs text-slate-500">Rata-rata kelembapan</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span id="statAvgHum" class="text-lg sm:text-xl font-bold font-mono-num text-slate-900">--.-</span>
+            <span class="text-xs text-slate-400">%</span>
           </div>
         </div>
 
         <div class="pt-2 md:pt-0 md:px-3">
-          <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider font-mono">Total Data Terbaca</span>
-          <div class="flex items-baseline space-x-1 mt-1">
-            <span id="statTotalRows" class="text-xl font-bold font-mono text-slate-800">0</span>
-            <span class="text-xs text-slate-500">siklus</span>
+          <span class="text-xs text-slate-500">Jumlah sampel ditampilkan</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span id="statTotalRows" class="text-lg sm:text-xl font-bold font-mono-num text-slate-900">0</span>
+            <span class="text-xs text-slate-400">rekaman</span>
           </div>
         </div>
-
       </div>
     </section>
 
-    <!-- Chart Panel: Interactive Historical Curves -->
-    <section class="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+    <!-- =======================================================================
+         INTERACTIVE TELEMETRY CHART
+    ======================================================================= -->
+    <section class="bg-white border border-slate-200/90 rounded-xl p-5 sm:p-6 space-y-4">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-            <svg class="w-4 h-4 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-            Grafik Telemetri Suhu & Kelembapan Real-Time
+          <h2 class="text-sm sm:text-base font-bold text-slate-900">
+            Grafik Riwayat Suhu &amp; Kelembapan Ruang
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            Tren fluktuasi termal termonitor langsung dari miniatur ruang server
+            Perubahan kondisi udara terhadap waktu dari sensor di dalam miniatur ruang server
           </p>
         </div>
 
-        <!-- Interactive Filter Controls -->
-        <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
-          
-          <!-- Dataset toggles -->
-          <button id="toggleTemp" onclick="toggleDataset(0)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 font-semibold shadow-2xs hover:bg-amber-100/70 transition-all">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <span>Suhu Ruang</span>
+        <!-- Dataset & Limit Controls -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <button id="toggleTemp" onclick="toggleDataset(0)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 font-semibold hover:bg-amber-100/70 transition-all cursor-pointer">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span>Suhu (°C)</span>
           </button>
 
-          <button id="toggleHum" onclick="toggleDataset(1)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-800 font-semibold shadow-2xs hover:bg-sky-100/70 transition-all">
-            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
-            <span>Kelembapan</span>
+          <button id="toggleHum" onclick="toggleDataset(1)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-800 font-semibold hover:bg-sky-100/70 transition-all cursor-pointer">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            <span>Kelembapan (%)</span>
           </button>
 
-          <!-- Range limit selector -->
-          <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 text-slate-600">
-            <button onclick="changeLimit(15)" id="btnLimit15" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-slate-900 shadow-2xs transition-all">15 Pts</button>
-            <button onclick="changeLimit(30)" id="btnLimit30" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all">30 Pts</button>
-            <button onclick="changeLimit(50)" id="btnLimit50" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all">50 Pts</button>
+          <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 text-slate-600 font-mono-num">
+            <button onclick="changeLimit(15)" id="btnLimit15" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-slate-900 shadow-2xs transition-all cursor-pointer">15 data</button>
+            <button onclick="changeLimit(30)" id="btnLimit30" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all cursor-pointer">30 data</button>
+            <button onclick="changeLimit(50)" id="btnLimit50" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all cursor-pointer">50 data</button>
           </div>
-
         </div>
       </div>
 
-      <!-- Canvas Chart Container -->
-      <div class="h-64 sm:h-80 w-full pt-2">
+      <!-- Canvas Container -->
+      <div class="h-64 sm:h-80 w-full pt-1">
         <canvas id="telemetryChart"></canvas>
       </div>
 
-      <!-- Threshold indicators legend -->
-      <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-500 font-mono gap-2">
-        <div class="flex items-center gap-4">
+      <!-- Legend Footer -->
+      <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
+        <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-1.5">
             <span class="w-3 h-0.5 border-b-2 border-dashed border-amber-500 inline-block"></span>
-            <span id="legendFanOn">Batas Kipas ON (28.0°C)</span>
+            <span id="legendFanOn">Batas kipas menyala (28.0°C)</span>
           </div>
           <div class="flex items-center gap-1.5">
             <span class="w-3 h-0.5 border-b-2 border-dashed border-rose-500 inline-block"></span>
-            <span id="legendCritical">Batas Bahaya (30.0°C)</span>
+            <span id="legendCritical">Batas peringatan darurat (30.0°C)</span>
           </div>
         </div>
-        <div id="legendNoteCritical" class="text-[11px] text-slate-500">
-          *Notifikasi darurat Telegram otomatis terkirim jika Suhu &ge; 30.0°C
+        <div id="legendNoteCritical" class="text-xs text-slate-400">
+          Notifikasi Telegram dikirim otomatis saat suhu mencapai 30.0°C
         </div>
       </div>
     </section>
 
-    <!-- Historical Data Log Table -->
-    <section class="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
-      
-      <!-- Table Header & Filter Bar -->
-      <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50">
-        <div class="flex items-center space-x-2">
-          <svg class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
-          <h3 class="text-sm font-bold text-slate-900">Log Rekaman Telemetri Real-Time</h3>
-          <span id="badgeLogCount" class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 font-medium">
-            0 Baris
+    <!-- =======================================================================
+         HISTORICAL DATA TABLE
+    ======================================================================= -->
+    <section class="bg-white border border-slate-200/90 rounded-xl overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <h3 class="text-sm font-bold text-slate-900">Riwayat Rekaman Data Sensor</h3>
+          <span id="badgeLogCount" class="text-xs font-mono-num px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium">
+            0 baris
           </span>
         </div>
 
-        <!-- Filter Search Box -->
-        <div class="flex items-center gap-2">
-          <div class="relative w-full sm:w-64">
-            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="searchInput" oninput="filterTable()" placeholder="Cari status / suhu..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-hidden focus:ring-1 focus:ring-sky-500 font-mono">
-          </div>
+        <div class="relative w-full sm:w-64">
+          <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="searchInput" oninput="filterTable()" placeholder="Cari waktu, suhu, atau status..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:ring-1 focus:ring-sky-500">
         </div>
       </div>
 
-      <!-- Responsive Table -->
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="bg-slate-50 text-slate-500 font-mono font-semibold uppercase tracking-wider border-b border-slate-200 text-[11px]">
-              <th class="py-3 px-4">Indeks ID</th>
-              <th class="py-3 px-4">Waktu Perekaman</th>
-              <th class="py-3 px-4">Suhu (°C)</th>
-              <th class="py-3 px-4">Kelembapan (%RH)</th>
-              <th class="py-3 px-4">Status Relay</th>
-              <th class="py-3 px-4">Kondisi Operasional Termal</th>
+            <tr class="bg-slate-50/80 text-slate-500 font-semibold border-b border-slate-200">
+              <th class="py-3 px-4">No. Log</th>
+              <th class="py-3 px-4">Waktu Rekaman</th>
+              <th class="py-3 px-4">Suhu Ruang</th>
+              <th class="py-3 px-4">Kelembapan</th>
+              <th class="py-3 px-4">Kipas Sirkulasi</th>
+              <th class="py-3 px-4">Keterangan Kondisi</th>
             </tr>
           </thead>
-          <tbody id="tableBody" class="divide-y divide-slate-100 font-mono text-slate-700">
+          <tbody id="tableBody" class="divide-y divide-slate-100 text-slate-700">
             <tr>
               <td colspan="6" class="py-12 text-center text-slate-400">
-                <div class="flex items-center justify-center space-x-2">
-                  <span class="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></span>
-                  <span class="text-xs font-sans">Menghubungkan ke basis data telemetri...</span>
-                </div>
+                Memuat data rekaman dari server...
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Table Footer Status -->
-      <div class="p-3 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between font-mono">
-        <span id="tablePageInfo">Menampilkan data telemetri terverifikasi</span>
-        <span class="text-[11px] text-slate-400">Auto-update setiap 4 detik</span>
+      <div class="px-4 py-3 bg-slate-50/60 border-t border-slate-100 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+        <span>Data tersimpan secara otomatis di basis data Cloud</span>
+        <span class="text-slate-400">Sinkronisasi latar belakang setiap 4 detik</span>
       </div>
-
     </section>
 
   </main>
 
   <!-- =========================================================================
-       MODAL PENGATURAN PARAMETER SUHU & KONTROL KIPAS (SETPOINT CONFIG)
+       HIDDEN SETPOINT CONFIGURATION MODAL (OPENED VIA TRIPLE-CLICK ON "Batas: 28.0°C" OR SHIFT+S)
   ========================================================================= -->
-  <div id="configModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 transition-all">
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-      
-      <!-- Modal Header -->
+  <div id="configModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+
       <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-            ⚙️
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900">Pengaturan Parameter Suhu & Kipas</h3>
-            <p class="text-[11px] text-slate-500 font-mono">Sinkronisasi Cloud Supabase &amp; NVS ESP32</p>
-          </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Pengaturan Parameter Ambang Suhu</h3>
+          <p class="text-xs text-slate-500">Tersinkron langsung ke Cloud &amp; memori perangkat</p>
         </div>
-        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
-      <!-- Modal Body -->
       <div class="p-5 space-y-4 text-xs">
-        
-        <!-- Quick Preset Chips -->
         <div>
-          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1.5">Preset Cepat Pengujian / Demo</label>
-          <div class="grid grid-cols-3 gap-2 font-mono">
-            <button type="button" onclick="applyPreset(26.0, 28.5)" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-slate-700 hover:text-sky-800 font-semibold text-[11px] transition-all">
-              Uji Cepat (26.0°C)
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Pilihan cepat skenario uji</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="applyPreset(26.0, 28.5)" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-slate-700 font-semibold transition-all cursor-pointer">
+              Ruang AC (26°C)
             </button>
-            <button type="button" onclick="applyPreset(28.0, 30.0)" class="px-2.5 py-1.5 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 font-semibold text-[11px] transition-all">
-              Standar (28.0°C)
+            <button type="button" onclick="applyPreset(28.0, 30.0)" class="px-2.5 py-1.5 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 font-semibold transition-all cursor-pointer">
+              Standar (28°C)
             </button>
-            <button type="button" onclick="applyPreset(31.0, 33.5)" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 text-slate-700 hover:text-amber-800 font-semibold text-[11px] transition-all">
-              Suhu Ruang (31.0°C)
+            <button type="button" onclick="applyPreset(35.0, 37.0)" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 text-slate-700 font-semibold transition-all cursor-pointer">
+              Non-AC (35°C)
             </button>
           </div>
         </div>
 
-        <!-- Setpoint Kipas ON -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label for="inputFanOn" class="block text-[11px] font-semibold text-slate-700 mb-1">Batas Kipas ON (°C)</label>
-            <input type="number" id="inputFanOn" step="0.5" min="18" max="45" value="28.0" oninput="updateHysteresisPreview()" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono text-sm font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-sky-500">
-            <p id="previewHysteresis" class="text-[10px] text-slate-500 font-mono mt-1">Kipas OFF: &lt; 27.5 °C (Histeresis 0.5°C)</p>
+            <label for="inputFanOn" class="block text-xs font-semibold text-slate-700 mb-1">Batas kipas menyala (°C)</label>
+            <input type="number" id="inputFanOn" step="0.5" min="18" max="45" value="28.0" oninput="updateHysteresisPreview()" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono-num text-sm font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-sky-500">
+            <p id="previewHysteresis" class="text-[11px] text-slate-500 mt-1">Kipas berhenti di bawah 27.5°C</p>
           </div>
 
           <div>
-            <label for="inputCritical" class="block text-[11px] font-semibold text-slate-700 mb-1">Batas Bahaya / Telegram (°C)</label>
-            <input type="number" id="inputCritical" step="0.5" min="20" max="50" value="30.0" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono text-sm font-bold text-rose-600 focus:outline-hidden focus:ring-2 focus:ring-rose-500">
-            <p class="text-[10px] text-slate-500 font-mono mt-1">Trigger alarm &amp; bot Telegram</p>
+            <label for="inputCritical" class="block text-xs font-semibold text-slate-700 mb-1">Batas peringatan darurat (°C)</label>
+            <input type="number" id="inputCritical" step="0.5" min="20" max="50" value="30.0" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono-num text-sm font-bold text-rose-600 focus:outline-hidden focus:ring-2 focus:ring-rose-500">
+            <p class="text-[11px] text-slate-500 mt-1">Memicu notifikasi Telegram</p>
           </div>
         </div>
 
-        <!-- Mode Kendali Kipas -->
-        <div class="pt-1">
-          <label for="selectFanMode" class="block text-[11px] font-semibold text-slate-700 mb-1">Mode Operasi Kipas Push-Pull</label>
-          <select id="selectFanMode" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-mono text-xs font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-sky-500">
-            <option value="auto">Otomatis (Sesuai Ambang Suhu Sensor DHT22)</option>
-            <option value="manual_on">Manual Override (Paksa Kipas Menyala Terus)</option>
+        <div>
+          <label for="selectFanMode" class="block text-xs font-semibold text-slate-700 mb-1">Mode kerja kipas sirkulasi</label>
+          <select id="selectFanMode" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-sky-500">
+            <option value="auto">Otomatis (Mengikuti pembacaan sensor suhu)</option>
+            <option value="manual_on">Manual (Nyalakan kipas terus-menerus)</option>
           </select>
         </div>
 
-        <!-- Status Notice -->
-        <div id="configStatusMsg" class="hidden px-3 py-2 rounded-lg text-[11px] font-mono font-medium"></div>
-
+        <div id="configStatusMsg" class="hidden px-3 py-2 rounded-lg text-xs font-medium"></div>
       </div>
 
-      <!-- Modal Footer -->
       <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
-        <button type="button" onclick="closeConfigModal()" class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-xs font-semibold transition-all">
-          Batal
+        <button type="button" onclick="closeConfigModal()" class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-xs font-semibold transition-all cursor-pointer">
+          Tutup
         </button>
-        <button type="button" id="btnSaveConfig" onclick="saveThresholdConfig()" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-2xs active:scale-95 transition-all">
-          Simpan &amp; Terapkan
+        <button type="button" id="btnSaveConfig" onclick="saveThresholdConfig()" class="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold active:scale-95 transition-all cursor-pointer">
+          Simpan perubahan
         </button>
       </div>
 
@@ -479,52 +576,53 @@
   </div>
 
   <!-- =========================================================================
-       GLOBAL FOOTER
+       FOOTER
   ========================================================================= -->
-  <footer class="mt-8 border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500 font-mono">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+  <footer class="mt-8 border-t border-slate-200/80 bg-white py-4 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
       <div>
-        Capstone Design Kelompok C1 &copy; 2026 &bull; Departemen Teknik Elektro FTEIC ITS
+        Proyek Capstone Design Kelompok C1 &bull; Departemen Teknik Elektro FTEIC ITS
       </div>
       <div class="text-slate-400">
-        Push-Pull Thermal Management &bull; Standar ASHRAE TC 9.9
+        Sistem Sirkulasi Udara Push-Pull Ruang Server
       </div>
     </div>
   </footer>
 
   <!-- =========================================================================
-       LOGIC CONTROLLERS & REALTIME STACK (ROBUST REST & WEBSOCKET)
+       APPLICATION CONTROLLER
   ========================================================================= -->
   <script>
-    // =========================================================================
-    // 1. SUPABASE CREDENTIALS & INITIALIZATION
-    // =========================================================================
     const SUPABASE_URL = "https://wpcfddrvzlhpmqjfiydp.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwY2ZkZHJ2emxocG1xamZpeWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MDk5NDEsImV4cCI6MjEwOTA4NTk0MX0.IesYOLYRz-jqgorDpcYLHAXX4iwwwUkgu7asvWFzSnM";
 
-    // Supabase client instance (menggunakan nama variabel client agar tidak konflik dengan global namespace)
     let supabaseClient = null;
     try {
       if (window.supabase && typeof window.supabase.createClient === 'function') {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch (err) {
-      console.warn("Supabase JS SDK init:", err);
+      console.warn("Supabase init notice:", err);
     }
 
     let displayLimit = 15;
     let allLogs = [];
     let latestRecordDate = null;
+    let isDeviceOnline = false;
+    let lastOnlineState = null;
+
     let isAudioAlertEnabled = false;
     let lastAudioBeepTime = 0;
 
-    // Parameter Setpoint Dinamis (Tersinkronisasi dengan Cloud Supabase & NVS ESP32)
+    // Dynamic Thresholds (Default: 28.0°C Fan ON, 30.0°C Emergency Alert)
     let thresholdFanOn = 28.0;
     let thresholdCritical = 30.0;
     let isAutoFanMode = true;
-    let espLocalIp = "";
 
-    // Load Setpoint dari localStorage saat inisialisasi awal
+    // Secret Triple-Click State
+    let secretClickCount = 0;
+    let secretClickTimer = null;
+
     try {
       const savedCfg = localStorage.getItem('capstone_threshold_config');
       if (savedCfg) {
@@ -532,36 +630,70 @@
         if (!isNaN(parseFloat(parsed.fanOn))) thresholdFanOn = parseFloat(parsed.fanOn);
         if (!isNaN(parseFloat(parsed.critical))) thresholdCritical = parseFloat(parsed.critical);
         if (typeof parsed.autoMode === 'boolean') isAutoFanMode = parsed.autoMode;
-        if (parsed.espIp) espLocalIp = parsed.espIp;
       }
     } catch (e) {}
+
+    // Secret trigger: Triple-click on "Batas: 28.0°C" OR Shift + S
+    function handleSecretTrigger() {
+      secretClickCount++;
+      if (secretClickTimer) clearTimeout(secretClickTimer);
+      if (secretClickCount >= 3) {
+        secretClickCount = 0;
+        openConfigModal();
+      } else {
+        secretClickTimer = setTimeout(() => {
+          secretClickCount = 0;
+        }, 900);
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.shiftKey && (e.key === 'S' || e.key === 's')) {
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        if (activeTag !== 'INPUT' && activeTag !== 'SELECT') {
+          e.preventDefault();
+          openConfigModal();
+        }
+      }
+    });
+
+    function toggleArchPanel() {
+      const body = document.getElementById('archPanelBody');
+      const btn = document.getElementById('btnToggleArch');
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        btn.innerText = 'Sembunyikan bagan';
+      } else {
+        body.classList.add('hidden');
+        btn.innerText = 'Tampilkan bagan';
+      }
+    }
 
     function refreshThresholdLabels() {
       const fanStr = thresholdFanOn.toFixed(1) + "°C";
       const critStr = thresholdCritical.toFixed(1) + "°C";
-      const modeBadge = isAutoFanMode ? "" : " (MANUAL ON)";
-
-      const hdrBadge = document.getElementById('headerSetpointBadge');
-      if (hdrBadge) hdrBadge.innerText = fanStr + modeBadge;
 
       const cardLbl = document.getElementById('labelThresholdCard');
-      if (cardLbl) cardLbl.innerText = `Batas: ${fanStr} ✎`;
+      if (cardLbl) cardLbl.innerText = `Batas: ${fanStr}`;
 
       const legFan = document.getElementById('legendFanOn');
-      if (legFan) legFan.innerText = `Batas Kipas ON (${fanStr})`;
+      if (legFan) legFan.innerText = `Batas kipas menyala (${fanStr})`;
 
       const legCrit = document.getElementById('legendCritical');
-      if (legCrit) legCrit.innerText = `Batas Bahaya (${critStr})`;
+      if (legCrit) legCrit.innerText = `Batas peringatan darurat (${critStr})`;
 
       const legNote = document.getElementById('legendNoteCritical');
-      if (legNote) legNote.innerHTML = `*Notifikasi darurat Telegram otomatis terkirim jika Suhu &ge; ${critStr}`;
+      if (legNote) legNote.innerText = `Notifikasi Telegram dikirim otomatis saat suhu mencapai ${critStr}`;
+
+      const archRule = document.getElementById('archLogicRule');
+      if (archRule) archRule.innerText = `Batas \u2265 ${fanStr}`;
     }
 
     function updateHysteresisPreview() {
       const val = parseFloat(document.getElementById('inputFanOn').value);
       const prev = document.getElementById('previewHysteresis');
       if (!isNaN(val) && prev) {
-        prev.innerText = `Kipas OFF: < ${(val - 0.5).toFixed(1)} °C (Histeresis 0.5°C)`;
+        prev.innerText = `Kipas berhenti di bawah ${(val - 0.5).toFixed(1)}°C`;
       }
     }
 
@@ -610,26 +742,22 @@
           const cloudCrit = Math.abs(parseFloat(cfg.humidity));
           const cloudAuto = Boolean(cfg.fan_status);
 
-          if (!isNaN(cloudFanOn) && cloudFanOn >= 15 && cloudFanOn <= 50) {
-            thresholdFanOn = cloudFanOn;
-          }
-          if (!isNaN(cloudCrit) && cloudCrit >= 18 && cloudCrit <= 60) {
-            thresholdCritical = cloudCrit;
-          }
+          if (!isNaN(cloudFanOn) && cloudFanOn >= 15 && cloudFanOn <= 50) thresholdFanOn = cloudFanOn;
+          if (!isNaN(cloudCrit) && cloudCrit >= 18 && cloudCrit <= 60) thresholdCritical = cloudCrit;
           isAutoFanMode = cloudAuto;
 
           try {
             localStorage.setItem('capstone_threshold_config', JSON.stringify({
               fanOn: thresholdFanOn,
               critical: thresholdCritical,
-              autoMode: isAutoFanMode,
-              espIp: espLocalIp
+              autoMode: isAutoFanMode
             }));
           } catch (e) {}
 
           refreshThresholdLabels();
           if (allLogs.length > 0) {
             updateMetricsUI(allLogs[0]);
+            updateArchitectureUI(allLogs[0]);
             renderTable(allLogs);
           }
         }
@@ -646,8 +774,8 @@
       const btn = document.getElementById('btnSaveConfig');
 
       if (isNaN(newFanOn) || isNaN(newCrit) || newFanOn < 15 || newFanOn > 50 || newCrit <= newFanOn) {
-        msg.className = "px-3 py-2 rounded-lg text-[11px] font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200 block";
-        msg.innerText = "⚠️ Batas Bahaya harus lebih tinggi dari Batas Kipas ON (rentang 15°C - 50°C).";
+        msg.className = "px-3 py-2 rounded-lg text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 block";
+        msg.innerText = "Batas peringatan darurat harus lebih tinggi dari batas nyala kipas (15°C – 50°C).";
         return;
       }
 
@@ -666,6 +794,7 @@
       refreshThresholdLabels();
       if (allLogs.length > 0) {
         updateMetricsUI(allLogs[0]);
+        updateArchitectureUI(allLogs[0]);
         renderTable(allLogs);
       }
 
@@ -674,7 +803,6 @@
 
       let cloudSuccess = false;
       try {
-        // Simpan konfigurasi ke Cloud Supabase (menggunakan sentinel humidity negatif agar terpisah dari log sensor)
         const resp = await fetch(`${SUPABASE_URL}/rest/v1/sensor_logs`, {
           method: 'POST',
           headers: {
@@ -695,35 +823,33 @@
       }
 
       btn.disabled = false;
-      btn.innerText = "Simpan & Terapkan";
+      btn.innerText = "Simpan perubahan";
 
-      msg.className = "px-3 py-2 rounded-lg text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 block";
+      msg.className = "px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 block";
       msg.innerText = cloudSuccess
-        ? `✅ Berhasil! Setpoint (${thresholdFanOn.toFixed(1)}°C / ${thresholdCritical.toFixed(1)}°C) tersinkron ke Cloud & ESP32.`
-        : `✅ Tersimpan di Dashboard (${thresholdFanOn.toFixed(1)}°C / ${thresholdCritical.toFixed(1)}°C).`;
+        ? `Perubahan disimpan (${thresholdFanOn.toFixed(1)}°C / ${thresholdCritical.toFixed(1)}°C) dan dikirim ke perangkat.`
+        : `Perubahan disimpan di dashboard (${thresholdFanOn.toFixed(1)}°C / ${thresholdCritical.toFixed(1)}°C).`;
 
       setTimeout(() => {
         closeConfigModal();
-      }, 900);
+      }, 800);
     }
 
-    // Web Audio API Synthesizer (Buzzer Beep simulator)
+    // Web Audio Alert Synthesizer (Only beeps when device is ONLINE and temperature is critical)
     function playAlertBeep() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = "sine";
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880 Hz note A5
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc.frequency.setValueAtTime(840, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.30);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.35);
-      } catch (e) {
-        console.warn("AudioContext notice:", e);
-      }
+        osc.stop(audioCtx.currentTime + 0.30);
+      } catch (e) {}
     }
 
     function toggleAudioAlert() {
@@ -735,20 +861,20 @@
       if (isAudioAlertEnabled) {
         mutedIcon.classList.add('hidden');
         activeIcon.classList.remove('hidden');
-        textSound.innerText = "Alarm: On";
-        textSound.className = "hidden sm:inline font-mono text-[11px] text-rose-600 font-bold";
-        playAlertBeep();
+        textSound.innerText = isDeviceOnline ? "Suara: Aktif" : "Suara: Siaga";
+        textSound.className = "text-xs text-rose-600 font-semibold";
+        // Only play test beep if device is actually online and critical right now
+        if (isDeviceOnline && allLogs.length > 0 && parseFloat(allLogs[0].temperature) >= thresholdCritical) {
+          playAlertBeep();
+        }
       } else {
         mutedIcon.classList.remove('hidden');
         activeIcon.classList.add('hidden');
-        textSound.innerText = "Alarm: Off";
-        textSound.className = "hidden sm:inline font-mono text-[11px] text-slate-500";
+        textSound.innerText = "Suara: Mati";
+        textSound.className = "text-xs text-slate-600";
       }
     }
 
-    // =========================================================================
-    // 2. TIMEZONE PARSER (WIB NORMALIZER)
-    // =========================================================================
     function parseDateToWIB(dateStr) {
       if (!dateStr) return new Date();
       if (dateStr.endsWith('+00:00')) {
@@ -762,17 +888,15 @@
     }
 
     // =========================================================================
-    // 3. CHART.JS CONFIGURATION (PREMIUM LIGHT THEME)
+    // CHART.JS INITIALIZATION
     // =========================================================================
     const ctx = document.getElementById('telemetryChart').getContext('2d');
-    
-    // Elegant soft gradients
-    const tempGradient = ctx.createLinearGradient(0, 0, 0, 320);
-    tempGradient.addColorStop(0, 'rgba(245, 158, 11, 0.22)');
-    tempGradient.addColorStop(1, 'rgba(245, 158, 11, 0.00)');
+    const tempGradient = ctx.createLinearGradient(0, 0, 0, 300);
+    tempGradient.addColorStop(0, 'rgba(217, 119, 6, 0.16)');
+    tempGradient.addColorStop(1, 'rgba(217, 119, 6, 0.00)');
 
-    const humGradient = ctx.createLinearGradient(0, 0, 0, 320);
-    humGradient.addColorStop(0, 'rgba(2, 132, 199, 0.18)');
+    const humGradient = ctx.createLinearGradient(0, 0, 0, 300);
+    humGradient.addColorStop(0, 'rgba(2, 132, 199, 0.14)');
     humGradient.addColorStop(1, 'rgba(2, 132, 199, 0.00)');
 
     const chartData = {
@@ -781,31 +905,31 @@
         {
           label: 'Suhu Ruang (°C)',
           data: [],
-          borderColor: '#f59e0b',
+          borderColor: '#d97706',
           backgroundColor: tempGradient,
-          borderWidth: 2.5,
-          tension: 0.35,
-          fill: true,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#ffffff',
-          pointBorderColor: '#f59e0b',
-          pointBorderWidth: 2,
-          yAxisID: 'y'
-        },
-        {
-          label: 'Kelembapan (%RH)',
-          data: [],
-          borderColor: '#0284c7',
-          backgroundColor: humGradient,
-          borderWidth: 2,
-          tension: 0.35,
+          borderWidth: 2.2,
+          tension: 0.32,
           fill: true,
           pointRadius: 2.5,
           pointHoverRadius: 5,
           pointBackgroundColor: '#ffffff',
-          pointBorderColor: '#0284c7',
+          pointBorderColor: '#d97706',
           pointBorderWidth: 2,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Kelembapan (%)',
+          data: [],
+          borderColor: '#0284c7',
+          backgroundColor: humGradient,
+          borderWidth: 2,
+          tension: 0.32,
+          fill: true,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#0284c7',
+          pointBorderWidth: 1.8,
           yAxisID: 'y1'
         }
       ]
@@ -817,34 +941,24 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 350 },
-        layout: {
-          padding: { left: 14, right: 10 }
-        },
+        animation: { duration: 300 },
+        layout: { padding: { left: 8, right: 8 } },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#ffffff',
-            titleColor: '#0f172a',
-            bodyColor: '#334155',
-            borderColor: '#e2e8f0',
-            borderWidth: 1,
-            padding: 12,
-            boxPadding: 4,
-            usePointStyle: true,
-            cornerRadius: 10,
-            shadowOffsetX: 0,
-            shadowOffsetY: 4,
-            shadowBlur: 10,
-            shadowColor: 'rgba(0,0,0,0.05)',
-            titleFont: { size: 12, family: 'JetBrains Mono', weight: 'bold' },
+            backgroundColor: '#0f172a',
+            titleColor: '#f8fafc',
+            bodyColor: '#e2e8f0',
+            padding: 10,
+            cornerRadius: 8,
+            titleFont: { size: 11, family: 'JetBrains Mono' },
             bodyFont: { size: 12, family: 'JetBrains Mono' }
           }
         },
         scales: {
           x: {
-            grid: { color: 'rgba(241, 245, 249, 1)', lineWidth: 1 },
+            grid: { color: '#f1f5f9' },
             ticks: { font: { size: 10, family: 'JetBrains Mono' }, color: '#64748b' }
           },
           y: {
@@ -852,14 +966,12 @@
             position: 'left',
             min: 20,
             max: 42,
-            afterFit: (axis) => { axis.width = 65; },
-            grid: { color: 'rgba(241, 245, 249, 1)' },
+            grid: { color: '#f1f5f9' },
             ticks: {
               stepSize: 4,
-              padding: 6,
               font: { size: 11, family: 'JetBrains Mono' },
-              color: '#d97706',
-              callback: val => val + ' °C'
+              color: '#b45309',
+              callback: val => val + '°C'
             }
           },
           y1: {
@@ -867,14 +979,12 @@
             position: 'right',
             min: 20,
             max: 100,
-            afterFit: (axis) => { axis.width = 55; },
             grid: { drawOnChartArea: false },
             ticks: {
               stepSize: 20,
-              padding: 6,
               font: { size: 11, family: 'JetBrains Mono' },
-              color: '#0284c7',
-              callback: val => val + ' %'
+              color: '#0369a1',
+              callback: val => val + '%'
             }
           }
         }
@@ -899,99 +1009,262 @@
       ['15', '30', '50'].forEach(l => {
         const btn = document.getElementById(`btnLimit${l}`);
         if (l == limit) {
-          btn.className = "px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-slate-900 shadow-2xs transition-all";
+          btn.className = "px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-slate-900 shadow-2xs transition-all cursor-pointer";
         } else {
-          btn.className = "px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all";
+          btn.className = "px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-all cursor-pointer";
         }
       });
       loadData();
     }
 
     // =========================================================================
-    // 4. UI METRIC & INSIGHT CONTROLLER
+    // STRICT ONLINE / OFFLINE UI METRIC CONTROLLER
     // =========================================================================
     function updateMetricsUI(record) {
       if (!record) return;
       latestRecordDate = parseDateToWIB(record.created_at);
 
+      const diffSec = Math.max(0, Math.floor((Date.now() - latestRecordDate.getTime()) / 1000));
+      isDeviceOnline = (diffSec <= 15);
+
       const temp = parseFloat(record.temperature);
       const hum = parseFloat(record.humidity);
-      const fan = record.fan_status;
+      const fanRecorded = Boolean(record.fan_status);
 
-      // Suhu UI
       const valTemp = document.getElementById('valTemp');
       const badgeTemp = document.getElementById('badgeTemp');
       const cardTemp = document.getElementById('cardTemp');
-      valTemp.innerText = temp.toFixed(1);
+      const tempIconBox = document.getElementById('tempIconBox');
 
-      if (temp >= thresholdCritical) {
-        cardTemp.className = "card-elevated bg-rose-50/40 border border-rose-300 rounded-2xl p-5 shadow-xs relative overflow-hidden ring-1 ring-rose-200";
-        valTemp.className = "text-4xl font-extrabold font-mono tracking-tight text-rose-600";
-        badgeTemp.className = "inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 border border-rose-200";
-        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> Bahaya Kritis (&ge; ${thresholdCritical.toFixed(1)}°C)`;
-
-        // Sound notification trigger
-        if (isAudioAlertEnabled && (Date.now() - lastAudioBeepTime > 4000)) {
-          playAlertBeep();
-          lastAudioBeepTime = Date.now();
-        }
-      } else if (temp >= thresholdFanOn) {
-        cardTemp.className = "card-elevated bg-amber-50/30 border border-amber-300 rounded-2xl p-5 shadow-xs relative overflow-hidden ring-1 ring-amber-200";
-        valTemp.className = "text-4xl font-extrabold font-mono tracking-tight text-amber-600";
-        badgeTemp.className = "inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200";
-        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Kipas Aktif (&ge; ${thresholdFanOn.toFixed(1)}°C)`;
-      } else {
-        cardTemp.className = "card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden";
-        valTemp.className = "text-4xl font-extrabold font-mono tracking-tight text-emerald-600";
-        badgeTemp.className = "inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200";
-        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Suhu Normal (&lt; ${thresholdFanOn.toFixed(1)}°C)`;
-      }
-
-      // Kelembapan UI
       const valHum = document.getElementById('valHum');
       const badgeHum = document.getElementById('badgeHum');
-      valHum.innerText = hum.toFixed(1);
 
-      if (hum >= 40.0 && hum <= 60.0) {
-        badgeHum.className = "inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200";
-        badgeHum.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Optimal ASHRAE (40–60%)`;
-      } else {
-        badgeHum.className = "inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200";
-        badgeHum.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Termonitor Baik`;
-      }
-
-      // Status Kipas Push-Pull
       const cardFan = document.getElementById('cardFan');
       const fanIconWrapper = document.getElementById('fanIconWrapper');
       const fanIconSvg = document.getElementById('fanIconSvg');
       const valFan = document.getElementById('valFan');
       const subFan = document.getElementById('subFan');
 
-      if (fan) {
-        cardFan.className = "card-elevated bg-sky-50/40 border border-sky-300 rounded-2xl p-5 shadow-xs relative overflow-hidden ring-1 ring-sky-200";
-        fanIconWrapper.className = "w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center shadow-2xs";
-        fanIconSvg.classList.add('fan-spinning');
-        valFan.className = "text-2xl font-bold font-mono tracking-tight text-sky-700";
-        valFan.innerText = "AKTIF (100% RPM)";
-        subFan.className = "text-[11px] text-sky-700 font-semibold flex items-center gap-1";
-        subFan.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span> Sirkulasi Push-Pull Menyala Penuh`;
-      } else {
-        cardFan.className = "card-elevated bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs relative overflow-hidden";
-        fanIconWrapper.className = "w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400";
+      const valSyncState = document.getElementById('valSyncState');
+      const syncIconBox = document.getElementById('syncIconBox');
+      const valLastSync = document.getElementById('valLastSync');
+
+      valTemp.innerText = temp.toFixed(1);
+      valHum.innerText = hum.toFixed(1);
+      valLastSync.innerText = "Log terakhir: " + formatTimeWIB(latestRecordDate);
+
+      if (!isDeviceOnline) {
+        // =================== DEVICE IS OFFLINE ===================
+        cardTemp.className = "bg-white border border-slate-200/90 rounded-xl p-5 transition-colors";
+        valTemp.className = "text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-slate-700";
+        tempIconBox.className = "w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500";
+        badgeTemp.className = "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600";
+        badgeTemp.innerText = "Rekaman terakhir (Offline)";
+
+        valHum.className = "text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-slate-700";
+        badgeHum.className = "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600";
+        badgeHum.innerText = "Rekaman terakhir (Offline)";
+
+        // Fan MUST be shown as stopped when device is offline
+        cardFan.className = "bg-white border border-slate-200/90 rounded-xl p-5 transition-colors";
+        fanIconWrapper.className = "w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400";
         fanIconSvg.classList.remove('fan-spinning');
-        valFan.className = "text-2xl font-bold font-mono tracking-tight text-slate-500";
-        valFan.innerText = "STANDBY";
-        subFan.className = "text-[11px] text-slate-500 font-medium flex items-center gap-1";
-        subFan.innerHTML = `Ventilasi Pasif (Suhu Ruang Aman)`;
+        valFan.className = "text-2xl sm:text-3xl font-bold tracking-tight text-slate-500";
+        valFan.innerText = "Berhenti";
+        subFan.className = "text-xs text-slate-500";
+        subFan.innerText = `Perangkat offline (Status terakhir: ${fanRecorded ? 'Menyala' : 'Standby'})`;
+
+        // Sync Card
+        valSyncState.className = "text-2xl sm:text-3xl font-bold tracking-tight text-slate-500";
+        valSyncState.innerText = "Terputus";
+        syncIconBox.className = "w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400";
+
+        if (isAudioAlertEnabled) {
+          document.getElementById('textSound').innerText = "Suara: Siaga";
+        }
+        return;
       }
 
-      // Waktu Pembaruan
-      document.getElementById('valLastSync').innerText = "Log Terakhir: " + formatTimeWIB(latestRecordDate);
+      // =================== DEVICE IS ONLINE (LIVE) ===================
+      valHum.className = "text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-slate-900";
+      if (isAudioAlertEnabled) {
+        document.getElementById('textSound').innerText = "Suara: Aktif";
+      }
+
+      if (temp >= thresholdCritical) {
+        cardTemp.className = "bg-rose-50/40 border border-rose-300 rounded-xl p-5 transition-colors";
+        valTemp.className = "text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-rose-600";
+        tempIconBox.className = "w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600";
+        badgeTemp.className = "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700";
+        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> Melewati batas bahaya (&ge; ${thresholdCritical.toFixed(1)}°C)`;
+
+        // Audio alarm ONLY triggers when device is ONLINE
+        if (isAudioAlertEnabled && (Date.now() - lastAudioBeepTime > 4000)) {
+          playAlertBeep();
+          lastAudioBeepTime = Date.now();
+        }
+      } else if (temp >= thresholdFanOn) {
+        cardTemp.className = "bg-amber-50/30 border border-amber-300 rounded-xl p-5 transition-colors";
+        valTemp.className = "text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-amber-600";
+        tempIconBox.className = "w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600";
+        badgeTemp.className = "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800";
+        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Suhu hangat (&ge; ${thresholdFanOn.toFixed(1)}°C)`;
+      } else {
+        cardTemp.className = "bg-white border border-slate-200/90 rounded-xl p-5 transition-colors";
+        valTemp.className = "text-3xl sm:text-4xl font-bold font-mono-num tracking-tight text-emerald-600";
+        tempIconBox.className = "w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600";
+        badgeTemp.className = "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700";
+        badgeTemp.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Suhu aman (&lt; ${thresholdFanOn.toFixed(1)}°C)`;
+      }
+
+      if (hum >= 40.0 && hum <= 60.0) {
+        badgeHum.className = "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700";
+        badgeHum.innerText = "Rentang ideal ruang server";
+      } else {
+        badgeHum.className = "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-sky-50 text-sky-700";
+        badgeHum.innerText = "Termonitor normal";
+      }
+
+      if (fanRecorded) {
+        cardFan.className = "bg-sky-50/40 border border-sky-300 rounded-xl p-5 transition-colors";
+        fanIconWrapper.className = "w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center";
+        fanIconSvg.classList.add('fan-spinning');
+        valFan.className = "text-2xl sm:text-3xl font-bold tracking-tight text-sky-700";
+        valFan.innerText = "Menyala";
+        subFan.className = "text-xs text-sky-700 font-medium";
+        subFan.innerText = "Kipas intake & exhaust aktif membuang panas";
+      } else {
+        cardFan.className = "bg-white border border-slate-200/90 rounded-xl p-5 transition-colors";
+        fanIconWrapper.className = "w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500";
+        fanIconSvg.classList.remove('fan-spinning');
+        valFan.className = "text-2xl sm:text-3xl font-bold tracking-tight text-slate-700";
+        valFan.innerText = "Standby";
+        subFan.className = "text-xs text-slate-500";
+        subFan.innerText = "Kipas tidak berputar (Suhu ruang aman)";
+      }
+
+      valSyncState.className = "text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600";
+      valSyncState.innerText = "Aktif (5 dtk)";
+      syncIconBox.className = "w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600";
+    }
+
+    // =========================================================================
+    // REAL-TIME ARCHITECTURE DIAGRAM CONTROLLER
+    // =========================================================================
+    function updateArchitectureUI(record) {
+      const archLiveDot = document.getElementById('archLiveDot');
+      const nodeSensor = document.getElementById('nodeSensor');
+      const nodeSensorBadge = document.getElementById('nodeSensorBadge');
+      const archSensorTemp = document.getElementById('archSensorTemp');
+      const archSensorHum = document.getElementById('archSensorHum');
+
+      const nodeController = document.getElementById('nodeController');
+      const nodeCtrlBadge = document.getElementById('nodeCtrlBadge');
+      const archLogicResult = document.getElementById('archLogicResult');
+
+      const nodeActuator = document.getElementById('nodeActuator');
+      const nodeFanBadge = document.getElementById('nodeFanBadge');
+      const archFanStateText = document.getElementById('archFanStateText');
+      const archFanMiniSvg = document.getElementById('archFanMiniSvg');
+
+      const nodeCloud = document.getElementById('nodeCloud');
+      const nodeCloudBadge = document.getElementById('nodeCloudBadge');
+      const archTelegramText = document.getElementById('archTelegramText');
+
+      const packets = ['pkt1Desktop', 'pkt1Mobile', 'pkt2Desktop', 'pkt2Mobile', 'pkt3Desktop', 'pkt3Mobile'];
+
+      if (!record) return;
+      const temp = parseFloat(record.temperature);
+      const hum = parseFloat(record.humidity);
+      const fanOn = Boolean(record.fan_status);
+
+      archSensorTemp.innerText = `${temp.toFixed(1)} °C`;
+      archSensorHum.innerText = `${hum.toFixed(1)} %`;
+
+      if (!isDeviceOnline) {
+        // Offline architecture state: pause all animated packets
+        archLiveDot.className = "w-2.5 h-2.5 rounded-full bg-slate-300";
+        packets.forEach(id => document.getElementById(id).classList.add('hidden'));
+
+        nodeSensor.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
+        nodeSensorBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
+        nodeSensorBadge.innerText = "Offline";
+
+        nodeController.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
+        nodeCtrlBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
+        nodeCtrlBadge.innerText = "Nonaktif";
+        archLogicResult.className = "font-semibold text-slate-400";
+        archLogicResult.innerText = "Menunggu";
+
+        nodeActuator.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
+        nodeFanBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
+        nodeFanBadge.innerText = "Berhenti";
+        archFanStateText.className = "font-semibold text-slate-500";
+        archFanStateText.innerText = "Kipas berhenti";
+        archFanMiniSvg.classList.remove('fan-spinning');
+        archFanMiniSvg.className = "w-3.5 h-3.5 text-slate-400";
+
+        nodeCloud.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between opacity-75";
+        nodeCloudBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500";
+        nodeCloudBadge.innerText = "Arsip";
+        archTelegramText.className = "text-slate-500 font-medium";
+        archTelegramText.innerText = "Menunggu perangkat aktif";
+        return;
+      }
+
+      // Online architecture state: activate animated data packets
+      archLiveDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+      packets.forEach(id => document.getElementById(id).classList.remove('hidden'));
+
+      nodeSensor.className = "lg:col-span-2 bg-white border border-sky-200 rounded-xl p-3.5 flex flex-col justify-between";
+      nodeSensorBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700";
+      nodeSensorBadge.innerText = "Membaca";
+
+      nodeController.className = "lg:col-span-2 bg-white border border-sky-200 rounded-xl p-3.5 flex flex-col justify-between";
+      nodeCtrlBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-50 text-sky-700";
+      nodeCtrlBadge.innerText = isAutoFanMode ? "Otomatis" : "Manual";
+
+      if (fanOn) {
+        archLogicResult.className = "font-semibold text-amber-600";
+        archLogicResult.innerText = "Picu Relay ON";
+
+        nodeActuator.className = "lg:col-span-2 bg-sky-50/40 border border-sky-300 rounded-xl p-3.5 flex flex-col justify-between";
+        nodeFanBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-600 text-white";
+        nodeFanBadge.innerText = "Menyala";
+        archFanStateText.className = "font-semibold text-sky-700";
+        archFanStateText.innerText = "Aliran udara aktif";
+        archFanMiniSvg.className = "w-3.5 h-3.5 text-sky-600 fan-spinning";
+      } else {
+        archLogicResult.className = "font-semibold text-emerald-600";
+        archLogicResult.innerText = "Relay OFF";
+
+        nodeActuator.className = "lg:col-span-2 bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between";
+        nodeFanBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600";
+        nodeFanBadge.innerText = "Standby";
+        archFanStateText.className = "font-semibold text-slate-500";
+        archFanStateText.innerText = "Kipas diam (Suhu aman)";
+        archFanMiniSvg.classList.remove('fan-spinning');
+        archFanMiniSvg.className = "w-3.5 h-3.5 text-slate-400";
+      }
+
+      if (temp >= thresholdCritical) {
+        nodeCloud.className = "lg:col-span-2 bg-rose-50/40 border border-rose-300 rounded-xl p-3.5 flex flex-col justify-between";
+        nodeCloudBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-rose-600 text-white";
+        nodeCloudBadge.innerText = "Darurat";
+        archTelegramText.className = "text-rose-700 font-semibold";
+        archTelegramText.innerText = "Notifikasi Telegram terkirim!";
+      } else {
+        nodeCloud.className = "lg:col-span-2 bg-white border border-emerald-200 rounded-xl p-3.5 flex flex-col justify-between";
+        nodeCloudBadge.className = "text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700";
+        nodeCloudBadge.innerText = "Tersinkron";
+        archTelegramText.className = "text-emerald-700 font-medium";
+        archTelegramText.innerText = "Telegram: Siaga normal";
+      }
     }
 
     function updateStatsSummary(logs) {
       if (!logs || logs.length === 0) return;
-      
+
       const temps = logs.map(r => parseFloat(r.temperature)).filter(v => !isNaN(v));
       const hums = logs.map(r => parseFloat(r.humidity)).filter(v => !isNaN(v));
 
@@ -1003,43 +1276,43 @@
       document.getElementById('statMaxTemp').innerText = maxTemp;
       document.getElementById('statAvgHum').innerText = avgHum;
       document.getElementById('statTotalRows').innerText = logs.length;
-      document.getElementById('badgeLogCount').innerText = `${logs.length} Baris`;
+      document.getElementById('badgeLogCount').innerText = `${logs.length} baris`;
     }
 
     function renderTable(logs) {
       const tbody = document.getElementById('tableBody');
       if (!logs || logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400 font-mono">Belum ada data telemetri yang tersedia.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400">Belum ada data rekaman yang tersedia.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = logs.map(row => {
         const temp = parseFloat(row.temperature);
-        const fan = row.fan_status;
+        const fan = Boolean(row.fan_status);
         const d = parseDateToWIB(row.created_at);
         const timeStr = formatTimeWIB(d);
 
-        let tempBadge = `<span class="text-slate-700 font-semibold">${temp.toFixed(1)} °C</span>`;
-        let statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-sans bg-slate-100 text-slate-600">Suhu Normal ASHRAE</span>`;
-        
+        let tempBadge = `<span class="text-slate-800 font-semibold font-mono-num">${temp.toFixed(1)} °C</span>`;
+        let statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700">Suhu aman</span>`;
+
         if (temp >= thresholdCritical) {
-          tempBadge = `<span class="text-rose-600 font-bold">${temp.toFixed(1)} °C</span>`;
-          statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-sans bg-rose-50 text-rose-700 border border-rose-200 font-semibold">⚠️ Peringatan Kritis (Telegram Alert)</span>`;
+          tempBadge = `<span class="text-rose-600 font-bold font-mono-num">${temp.toFixed(1)} °C</span>`;
+          statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-rose-50 text-rose-700 font-semibold">Melewati batas darurat (Notifikasi Telegram)</span>`;
         } else if (temp >= thresholdFanOn) {
-          tempBadge = `<span class="text-amber-600 font-bold">${temp.toFixed(1)} °C</span>`;
-          statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-sans bg-amber-50 text-amber-800 border border-amber-200">Kipas Aktif (Push-Pull Sirkulasi)</span>`;
+          tempBadge = `<span class="text-amber-600 font-bold font-mono-num">${temp.toFixed(1)} °C</span>`;
+          statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-800 font-medium">Pendinginan aktif (Kipas menyala)</span>`;
         }
 
-        const relayPill = fan 
-          ? `<span class="px-2 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200 font-bold text-[10px]">RELAY ON</span>`
-          : `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px]">RELAY OFF</span>`;
+        const relayPill = fan
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold text-xs"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>Menyala</span>`
+          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-xs">Standby</span>`;
 
         return `
           <tr class="hover:bg-slate-50/80 transition-colors">
-            <td class="py-3 px-4 text-slate-400 font-mono text-[11px]">#${row.id}</td>
-            <td class="py-3 px-4 text-slate-600 font-mono">${timeStr}</td>
+            <td class="py-3 px-4 text-slate-400 font-mono-num">#${row.id}</td>
+            <td class="py-3 px-4 text-slate-600 font-mono-num">${timeStr}</td>
             <td class="py-3 px-4">${tempBadge}</td>
-            <td class="py-3 px-4 text-sky-700 font-mono font-medium">${parseFloat(row.humidity).toFixed(1)} %</td>
+            <td class="py-3 px-4 text-slate-700 font-mono-num">${parseFloat(row.humidity).toFixed(1)} %</td>
             <td class="py-3 px-4">${relayPill}</td>
             <td class="py-3 px-4">${statusBadge}</td>
           </tr>
@@ -1058,7 +1331,7 @@
           r.id.toString().includes(term) ||
           r.temperature.toString().includes(term) ||
           r.humidity.toString().includes(term) ||
-          (r.fan_status ? "on aktif sirkulasi" : "off standby").includes(term)
+          (r.fan_status ? "menyala on aktif" : "standby off berhenti").includes(term)
         );
       });
       renderTable(filtered);
@@ -1076,88 +1349,98 @@
     }
 
     // =========================================================================
-    // 5. HEARTBEAT ENGINE (PRESISI STATUS ESP32 LIVE / STANDBY)
+    // HEARTBEAT & REAL-TIME STATE WATCHER
     // =========================================================================
     function checkHeartbeat() {
       const pill = document.getElementById('heartbeatPill');
       const dot = document.getElementById('heartbeatDot');
       const text = document.getElementById('heartbeatText');
+      const offlineBanner = document.getElementById('offlineBanner');
+      const offlineLastSeen = document.getElementById('offlineLastSeen');
 
       if (!latestRecordDate) {
-        pill.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-medium text-slate-500";
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-medium text-slate-500";
         dot.innerHTML = `<span class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>`;
-        text.innerText = "MENUNGGU BASIS DATA...";
+        text.innerText = "Menghubungkan...";
         return;
       }
 
-      // Detik selisih real dari waktu lokal Jakarta
       const diffSec = Math.max(0, Math.floor((Date.now() - latestRecordDate.getTime()) / 1000));
+      const nowOnline = (diffSec <= 15);
+      isDeviceOnline = nowOnline;
 
-      if (diffSec <= 15) {
-        // SISTEM LIVE AKTIF (ESP32 MENYALA & STREAMING)
-        pill.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 shadow-2xs";
+      if (nowOnline) {
+        offlineBanner.classList.add('hidden');
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700";
         dot.innerHTML = `
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         `;
-        text.innerHTML = `SISTEM AKTIF (ONLINE &bull; ${diffSec}s LALU)`;
+        text.innerText = `Perangkat Online (${diffSec} dtk lalu)`;
       } else {
-        // PERANGKAT STANDBY / MATI (OFFLINE)
         let timeAgo = "";
         if (diffSec < 60) {
           timeAgo = `${diffSec} detik lalu`;
         } else if (diffSec < 3600) {
           timeAgo = `${Math.floor(diffSec / 60)} menit lalu`;
-        } else {
+        } else if (diffSec < 86400) {
           timeAgo = `${Math.floor(diffSec / 3600)} jam lalu`;
+        } else {
+          timeAgo = `${Math.floor(diffSec / 86400)} hari lalu`;
         }
-        pill.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-xs font-semibold text-slate-700";
-        dot.innerHTML = `<span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>`;
-        text.innerHTML = `STANDBY (OFFLINE &bull; ${timeAgo})`;
+
+        offlineBanner.classList.remove('hidden');
+        offlineLastSeen.innerText = `Terakhir aktif: ${timeAgo}`;
+
+        pill.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-xs font-semibold text-slate-700";
+        dot.innerHTML = `<span class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>`;
+        text.innerText = `Perangkat Offline (${timeAgo})`;
+      }
+
+      // If online/offline status transitioned, immediately refresh card & architecture states
+      if (lastOnlineState !== nowOnline && allLogs.length > 0) {
+        lastOnlineState = nowOnline;
+        updateMetricsUI(allLogs[0]);
+        updateArchitectureUI(allLogs[0]);
       }
     }
 
     setInterval(checkHeartbeat, 1000);
 
-    // =========================================================================
-    // 6. INTERACTIVE FEATURES: REFRESH & CSV EXPORT
-    // =========================================================================
     async function manualRefresh() {
       const icon = document.getElementById('iconRefresh');
       icon.classList.add('animate-spin');
+      await loadConfigFromCloud();
       await loadData();
       setTimeout(() => {
         icon.classList.remove('animate-spin');
-      }, 500);
+      }, 450);
     }
 
     function exportToCSV() {
       if (!allLogs || allLogs.length === 0) {
-        alert("Belum ada data telemetri untuk diekspor.");
+        alert("Belum ada data untuk diunduh.");
         return;
       }
       let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "ID,Waktu_WIB,Suhu_C,Kelembapan_RH,Relay_Kipas\r\n";
+      csvContent += "ID,Waktu_WIB,Suhu_C,Kelembapan_Persen,Status_Kipas\r\n";
 
       allLogs.forEach(row => {
         const d = parseDateToWIB(row.created_at);
-        const timeStr = d.toISOString();
-        const fanStr = row.fan_status ? "ON" : "OFF";
+        const timeStr = formatTimeWIB(d);
+        const fanStr = row.fan_status ? "Menyala" : "Standby";
         csvContent += `${row.id},${timeStr},${row.temperature},${row.humidity},${fanStr}\r\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `telemetri_ruang_server_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute("download", `data_ruang_server_c1_${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
-    // =========================================================================
-    // 7. ROBUST DATA FETCHING (DIRECT REST API + LOCAL CACHE FALLBACK)
-    // =========================================================================
     async function loadData() {
       try {
         const url = `${SUPABASE_URL}/rest/v1/sensor_logs?select=*&humidity=gte.0&order=id.desc&limit=${displayLimit}`;
@@ -1169,56 +1452,51 @@
           }
         });
 
-        if (!resp.ok) {
-          throw new Error(`REST API HTTP ${resp.status}`);
-        }
-
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
 
         if (data && data.length > 0) {
           allLogs = data;
-          // Simpan ke local cache agar saat refresh atau offline data tidak hilang
           try {
             localStorage.setItem('capstone_sensor_logs_cache', JSON.stringify(data));
-          } catch(e) {}
+          } catch (e) {}
 
+          checkHeartbeat();
           updateMetricsUI(allLogs[0]);
+          updateArchitectureUI(allLogs[0]);
           updateStatsSummary(allLogs);
           renderTable(allLogs);
           updateChart(allLogs);
-          checkHeartbeat();
         } else {
           renderTable([]);
         }
       } catch (e) {
-        console.error("Gagal sinkronisasi data via REST API:", e);
-        // Fallback ke cache jika ada
+        console.warn("REST sync fallback notice:", e);
         try {
           const cached = localStorage.getItem('capstone_sensor_logs_cache');
           if (cached) {
             allLogs = JSON.parse(cached).filter(r => parseFloat(r.humidity) >= 0);
             if (allLogs.length > 0) {
+              checkHeartbeat();
               updateMetricsUI(allLogs[0]);
+              updateArchitectureUI(allLogs[0]);
               updateStatsSummary(allLogs);
               renderTable(allLogs);
               updateChart(allLogs);
-              checkHeartbeat();
             }
           }
-        } catch(err) {}
+        } catch (err) {}
       }
     }
 
-    // Realtime WebSocket Subscription
     function subscribeRealtime() {
       if (!supabaseClient) return;
       try {
         supabaseClient
-          .channel('channel_sensor_telemetry_clean')
+          .channel('channel_sensor_telemetry_v2')
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sensor_logs' }, payload => {
             const incomingHum = parseFloat(payload.new.humidity);
             if (incomingHum < 0) {
-              // Baris Konfigurasi Setpoint Cloud
               const cFanOn = parseFloat(payload.new.temperature);
               const cCrit = Math.abs(incomingHum);
               if (!isNaN(cFanOn) && cFanOn >= 15 && cFanOn <= 50) thresholdFanOn = cFanOn;
@@ -1227,6 +1505,7 @@
               refreshThresholdLabels();
               if (allLogs.length > 0) {
                 updateMetricsUI(allLogs[0]);
+                updateArchitectureUI(allLogs[0]);
                 renderTable(allLogs);
               }
               return;
@@ -1235,42 +1514,40 @@
             if (allLogs.length > displayLimit) allLogs.pop();
             try {
               localStorage.setItem('capstone_sensor_logs_cache', JSON.stringify(allLogs));
-            } catch(e) {}
+            } catch (e) {}
+            checkHeartbeat();
             updateMetricsUI(payload.new);
+            updateArchitectureUI(payload.new);
             updateStatsSummary(allLogs);
             renderTable(allLogs);
             updateChart(allLogs);
-            checkHeartbeat();
           })
           .subscribe();
       } catch (err) {
-        console.warn("Realtime WebSocket subscription error:", err);
+        console.warn("Realtime notice:", err);
       }
     }
 
-    // Render label setpoint awal
     refreshThresholdLabels();
 
-    // Coba load dari cache lokal saat pertama kali render (instan tanpa delay)
     try {
       const cached = localStorage.getItem('capstone_sensor_logs_cache');
       if (cached) {
         allLogs = JSON.parse(cached).filter(r => parseFloat(r.humidity) >= 0);
         if (allLogs.length > 0) {
+          checkHeartbeat();
           updateMetricsUI(allLogs[0]);
+          updateArchitectureUI(allLogs[0]);
           updateStatsSummary(allLogs);
           renderTable(allLogs);
           updateChart(allLogs);
-          checkHeartbeat();
         }
       }
-    } catch(e) {}
+    } catch (e) {}
 
-    // Polling background setiap 4 detik untuk reliabilitas penuh
     setInterval(loadData, 4000);
     setInterval(loadConfigFromCloud, 12000);
 
-    // Initial load dari Cloud Supabase REST API & start realtime
     loadConfigFromCloud();
     loadData();
     subscribeRealtime();
